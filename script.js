@@ -1,6 +1,4 @@
-// ==========================================
 // 1. FIREBASE CONFIGURATION
-// ==========================================
 const firebaseConfig = {
     apiKey: "YOUR_API_KEY_HERE",
     authDomain: "smartfinder-f0df9.firebaseapp.com",
@@ -14,9 +12,7 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-// ==========================================
 // 2. PG DATABASE
-// ==========================================
 const pgData = [
     {
         id: 1, name: "The Vesu Loft", area: "Vesu", rent: 12000, type: "AC", capacity: 2,
@@ -157,17 +153,13 @@ const pgData = [
     }
 ];
 
-// ==========================================
 // 3. STATE VARIABLES
-// ==========================================
 let favorites = new Set();
 let isLoginView = true;
 let isEditMode = false;
 let currentDetailMap = null;
 
-// ==========================================
 // 4. TOAST NOTIFICATION
-// ==========================================
 function showToast(msg) {
     const t = document.getElementById('toast');
     if (!t) return;
@@ -176,9 +168,7 @@ function showToast(msg) {
     setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-// ==========================================
 // 5. MODAL HELPERS
-// ==========================================
 function openModal(id) {
     const el = document.getElementById(id);
     if (el) el.classList.add('open');
@@ -189,9 +179,7 @@ function closeModal(id) {
     if (el) el.classList.remove('open');
 }
 
-// ==========================================
 // 6. RENDER PG CARDS
-// ==========================================
 function renderPGs() {
     const maxRent  = parseInt(document.getElementById('priceRange')?.value || 20000);
     const selCap   = document.getElementById('capacityFilter')?.value || 'All';
@@ -273,9 +261,7 @@ function renderPGs() {
     }).join('');
 }
 
-// ==========================================
 // 7. PG DETAIL MODAL
-// ==========================================
 function openPGDetail(id) {
     const pg = (typeof allPGs !== "undefined" ? allPGs : pgData).find(p => p.id === id);
     if (!pg) return;
@@ -373,9 +359,7 @@ function openPGDetail(id) {
     }, 250);
 }
 
-// ==========================================
 // 8. FAVORITES
-// ==========================================
 function toggleFavorite(id) {
     if (favorites.has(id)) {
         favorites.delete(id);
@@ -408,9 +392,7 @@ function renderFavorites() {
     }).join('');
 }
 
-// ==========================================
 // 9. HERO SLIDER
-// ==========================================
 function startHeroSlider() {
     var slides = document.querySelectorAll('.slide');
     if (slides.length === 0) return;
@@ -422,9 +404,7 @@ function startHeroSlider() {
     }, 5000);
 }
 
-// ==========================================
 // 10. FILTER RESET
-// ==========================================
 function clearFilters() {
     var priceRange = document.getElementById('priceRange');
     var priceValue = document.getElementById('priceValue');
@@ -446,9 +426,7 @@ function clearFilters() {
     renderPGs();
 }
 
-// ==========================================
 // 11. CONTACT FORM
-// ==========================================
 async function submitContact() {
     var name  = (document.getElementById('contactName')?.value  || '').trim();
     var email = (document.getElementById('contactEmail')?.value || '').trim();
@@ -478,9 +456,7 @@ async function submitContact() {
     }
 }
 
-// ==========================================
 // 12. AUTHENTICATION
-// ==========================================
 function handleAuthClick() {
     if (auth.currentUser) {
         renderFavorites();
@@ -561,9 +537,7 @@ function handleLogout() {
     });
 }
 
-// ==========================================
 // 13. PROFILE EDIT
-// ==========================================
 function toggleEditMode(forceEdit) {
     isEditMode = (forceEdit === true) ? true : !isEditMode;
 
@@ -614,9 +588,7 @@ function updateVerificationStatus(data) {
     }
 }
 
-// ==========================================
 // 14. AUTH STATE LISTENER
-// ==========================================
 auth.onAuthStateChanged(async function (user) {
     var authBtn   = document.getElementById('authBtn');
     var navAvatar = document.getElementById('navAvatar');
@@ -666,9 +638,7 @@ auth.onAuthStateChanged(async function (user) {
     }
 });
 
-// ==========================================
 // 15. INITIALISATION
-// ==========================================
 document.addEventListener('DOMContentLoaded', function () {
 
     // Initial render
@@ -735,9 +705,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (authForm) authForm.addEventListener('submit', handleEmailAuth);
 });
 
-// ==========================================
 // 50+ DUMMY PG DATA (Surat + Bardoli + Palsana)
-// ==========================================
 const extraPGs = [
     // ── VESU (10 PGs) ──
     { id:11, name:"Vesu Green Residency", area:"Vesu", rent:8500, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/23SBJ1LV/1.avif", lat:21.1510, lng:72.7780, address:"22, Green Park Society, Vesu, Surat - 395007", desc:"Affordable AC PG with homely vegetarian mess. 10 min walk from SVNIT.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup"], owner:{name:"Jignesh Patel",phone:"+91 98250 11101",initials:"J"}, roommates:[{name:"Rohan Shah",college:"SVNIT",sem:"3rd",city:"Vadodara",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
@@ -806,16 +774,7 @@ const extraPGs = [
 // Combine all PGs
 const allPGs = pgData.concat(extraPGs);
 
-// ==========================================
-// PG OWNER PORTAL
-// ==========================================
-
-
-
-
-// ==========================================
 // AI COLLEGE COMMUTE PLANNER
-// ==========================================
 
 var AI_FUNCTION_URL = "/api/ai";
 
