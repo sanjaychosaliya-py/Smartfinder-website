@@ -26,7 +26,6 @@
         }
         h1,h2,h3,h4,h5 { font-family: 'Syne', sans-serif; }
 
-        /* ─── NAV ─── */
         nav {
             background: rgba(0,53,47,0.85);
             backdrop-filter: blur(18px);
@@ -54,7 +53,6 @@
         }
         #authBtn:hover { background:var(--lime); color:var(--green); }
 
-        /* ─── HERO ─── */
         .hero { position:relative; height:680px; overflow:hidden; background:#000; }
         .slide {
             position:absolute; inset:0; opacity:0;
@@ -87,7 +85,6 @@
         }
         .search-bar input::placeholder { color:rgba(255,255,255,0.5); }
 
-        /* ─── FILTER BAR ─── */
         .filter-bar {
             background:rgba(0,0,0,0.3); border:1.5px solid rgba(206,220,0,0.3);
             border-radius:16px; padding:20px 28px; margin-bottom:32px;
@@ -105,7 +102,6 @@
         }
         .filter-chip input { accent-color:var(--lime); width:15px; height:15px; cursor:pointer; }
 
-        /* ─── ASIDE ─── */
         aside {
             background:rgba(0,0,0,0.3); border:1.5px solid rgba(206,220,0,0.2);
             border-radius:20px; padding:28px; position:sticky; top:88px;
@@ -134,7 +130,6 @@
         }
         .reset-btn:hover { background:var(--lime); color:var(--green); }
 
-        /* ─── PG CARDS ─── */
         .pg-card {
             background:#00352F; border:1.5px solid var(--lime);
             border-radius:22px; overflow:hidden; cursor:pointer;
@@ -173,7 +168,6 @@
         .badge-veg  { background:rgba(206,220,0,0.15); color:var(--lime); border:1px solid rgba(206,220,0,0.3); }
         .badge-ac   { background:rgba(139,92,246,0.2); color:#c4b5fd; border:1px solid rgba(139,92,246,0.3); }
 
-        /* ─── MODALS ─── */
         .modal {
             position:fixed; inset:0; z-index:500;
             background:rgba(0,0,0,0.85); backdrop-filter:blur(20px);
@@ -195,7 +189,6 @@
         }
         .modal-close:hover { background:#ef4444; transform:rotate(90deg) scale(1.1); }
 
-        /* ─── AUTH MODAL ─── */
         .auth-tab { font-size:11px; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; padding-bottom:8px; cursor:pointer; transition:all 0.2s; color:rgba(255,255,255,0.3); border-bottom:2px solid transparent; }
         .auth-tab.active { color:var(--lime); border-color:var(--lime); }
         .auth-input {
@@ -225,7 +218,6 @@
         .divider::before,.divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.1); }
         .divider span { font-size:10px; font-weight:700; color:rgba(255,255,255,0.3); text-transform:uppercase; }
 
-        /* ─── PROFILE MODAL ─── */
         .profile-modal-box {
             background:#00352F; border:2px solid rgba(206,220,0,0.3);
             border-radius:28px; padding:40px; width:100%; max-width:900px;
@@ -248,7 +240,6 @@
         }
         .verify-badge.verified { background:rgba(59,130,246,0.15); border-color:rgba(59,130,246,0.3); color:#93c5fd; }
 
-        /* ─── PG DETAIL MODAL ─── */
         .detail-modal-box {
             background:#002922; border:2px solid rgba(206,220,0,0.35);
             border-radius:28px; width:100%; max-width:1100px;
@@ -287,14 +278,11 @@
             text-decoration:none; cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif;
         }
         .contact-btn-outline:hover { background:var(--lime); color:var(--green); }
-
-        /* ─── SECTIONS ─── */
         .section { padding:80px 0; }
         .section-inner { max-width:1280px; margin:0 auto; padding:0 28px; }
         .section-title { font-family:'Syne',sans-serif; font-size:clamp(28px,4vw,52px); font-weight:800; letter-spacing:-1.5px; margin:0 0 16px; }
         .section-sub { font-size:15px; color:rgba(255,255,255,0.5); max-width:560px; margin:0 0 48px; line-height:1.7; }
 
-        /* Our Story */
         #about { background:rgba(0,0,0,0.2); }
         .story-grid { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; }
         .story-img { width:100%; height:460px; object-fit:cover; border-radius:24px; border:2px solid rgba(206,220,0,0.2); }
@@ -303,7 +291,6 @@
         .stat-num { font-family:'Syne',sans-serif; font-size:36px; font-weight:800; color:var(--lime); }
         .stat-label { font-size:11px; font-weight:600; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.1em; margin-top:4px; }
 
-        /* Contact */
         #help { background:rgba(0,0,0,0.15); }
         .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; }
         .contact-form { background:rgba(0,0,0,0.25); border:1.5px solid rgba(206,220,0,0.2); border-radius:24px; padding:36px; }
@@ -321,17 +308,13 @@
         .ci-label { font-size:10px; font-weight:700; color:var(--lime); text-transform:uppercase; letter-spacing:0.1em; }
         .ci-val { font-size:13px; font-weight:600; color:rgba(255,255,255,0.8); margin-top:4px; }
 
-        /* Footer */
         footer { background:#000; padding:48px 28px 32px; border-top:1px solid rgba(255,255,255,0.05); }
         .footer-inner { max-width:1280px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:space-between; gap:32px; }
         .footer-copy { font-size:11px; color:rgba(255,255,255,0.2); text-align:center; padding-top:32px; max-width:1280px; margin:0 auto; }
-
-        /* ─── SCROLLBAR ─── */
         ::-webkit-scrollbar { width:5px; }
         ::-webkit-scrollbar-track { background:rgba(255,255,255,0.03); }
         ::-webkit-scrollbar-thumb { background:rgba(206,220,0,0.4); border-radius:10px; }
 
-        /* ─── RESPONSIVE ─── */
         @media(max-width:768px) {
             .story-grid,.contact-grid { grid-template-columns:1fr; }
             .nav-links { display:none; }
@@ -339,7 +322,6 @@
             .detail-img-hero { height:260px; }
         }
 
-        /* ─── TOAST ─── */
         #toast {
             position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px);
             background:var(--lime); color:var(--green); padding:14px 28px; border-radius:999px;
@@ -348,8 +330,7 @@
         }
         #toast.show { transform:translateX(-50%) translateY(0); }
 
-        /* ── OWNER PORTAL FORM ── */
-        .listing-label {
+         .listing-label {
             font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.6);
             text-transform: uppercase; letter-spacing: 0.1em;
             display: block; margin-bottom: 7px;
@@ -406,15 +387,10 @@
         .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .form-grid-2 .full { grid-column: 1 / -1; }
         @media (max-width: 520px) { .form-grid-2 { grid-template-columns: 1fr; } }
-
-
-        /* ── ROLE SELECTOR CARDS ── */
-
     </style>
 </head>
 <body>
 
-<!-- ======================== NAV ======================== -->
 <nav>
     <div class="nav-inner">
         <div class="logo">SmartFinder</div>
@@ -431,7 +407,6 @@
     </div>
 </nav>
 
-<!-- ======================== HERO ======================== -->
 <header class="hero">
     <div class="slide active" style="background-image:url('https://i.ibb.co/JRLXQX2S/6.webp')"></div>
     <div class="slide" style="background-image:url('https://i.ibb.co/qTq8ffJ/20.png')"></div>
@@ -446,8 +421,6 @@
         </div>
     </div>
 </header>
-
-<!-- ======================== AI BANNER ======================== -->
 <div style="background:linear-gradient(135deg,rgba(206,220,0,0.1),rgba(0,0,0,0.25));border-top:1px solid rgba(206,220,0,0.2);border-bottom:1px solid rgba(206,220,0,0.15);padding:20px 28px;">
     <div style="max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
         <div style="display:flex;align-items:center;gap:14px;">
@@ -461,11 +434,9 @@
     </div>
 </div>
 
-<!-- ======================== LISTINGS ======================== -->
 <section id="listings" style="padding:64px 0;">
     <div style="max-width:1280px;margin:0 auto;padding:0 28px;">
         
-        <!-- Filter Bar -->
         <div class="filter-bar">
             <h3>Explore Listings</h3>
             <div style="flex:1;"></div>
@@ -480,7 +451,6 @@
         </div>
 
         <div style="display:grid;grid-template-columns:240px 1fr;gap:32px;">
-            <!-- Sidebar -->
             <aside>
                 <h3>Refine</h3>
                 <div class="aside-group">
@@ -544,14 +514,12 @@
                 <button class="reset-btn" onclick="clearFilters()">Reset All</button>
             </aside>
 
-            <!-- PG Grid -->
             <div id="pgContainer" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;align-content:start;">
             </div>
         </div>
     </div>
 </section>
 
-<!-- ======================== OUR STORY ======================== -->
 <section id="about" class="section" style="background:rgba(0,0,0,0.2);">
     <div class="section-inner">
         <div class="story-grid">
@@ -580,13 +548,11 @@
             </div>
         </div>
 
-        <!-- Team -->
         <div style="margin-top:80px;">
             <h3 style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin:0 0 8px;letter-spacing:-1px;">The Team Behind SmartFinder</h3>
             <p style="font-size:13px;color:rgba(255,255,255,0.4);margin:0 0 32px;">The developers who built this platform</p>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;">
 
-                <!-- Sanjay Chosaliya -->
                 <div onclick="openTeamModal('sanjay')" style="background:rgba(0,0,0,0.25);border:1.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.25s;" onmouseover="this.style.borderColor='#CEDC00';this.style.transform='translateY(-6px)';this.style.background='rgba(206,220,0,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.transform='none';this.style.background='rgba(0,0,0,0.25)'">
                     <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#CEDC00,#a8b800);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#00352F;margin:0 auto 16px;box-shadow:0 8px 24px rgba(206,220,0,0.3);">S</div>
                     <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:5px;">Sanjay Chosaliya</div>
@@ -594,7 +560,6 @@
                     
                 </div>
 
-                <!-- Jay Sohaliya -->
                 <div onclick="openTeamModal('jay')" style="background:rgba(0,0,0,0.25);border:1.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.25s;" onmouseover="this.style.borderColor='#60a5fa';this.style.transform='translateY(-6px)';this.style.background='rgba(96,165,250,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.transform='none';this.style.background='rgba(0,0,0,0.25)'">
                     <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(59,130,246,0.8),rgba(37,99,235,0.9));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff;margin:0 auto 16px;box-shadow:0 8px 24px rgba(59,130,246,0.3);">J</div>
                     <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:5px;">Jay Sohaliya</div>
@@ -602,7 +567,6 @@
                     
                 </div>
 
-                <!-- Ritu Radadiya -->
                 <div onclick="openTeamModal('ritu')" style="background:rgba(0,0,0,0.25);border:1.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.25s;" onmouseover="this.style.borderColor='#c084fc';this.style.transform='translateY(-6px)';this.style.background='rgba(192,132,252,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.transform='none';this.style.background='rgba(0,0,0,0.25)'">
                     <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(139,92,246,0.8),rgba(109,40,217,0.9));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff;margin:0 auto 16px;box-shadow:0 8px 24px rgba(139,92,246,0.3);">R</div>
                     <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:5px;">Ritu Radadiya</div>
@@ -610,7 +574,6 @@
                     
                 </div>
 
-                <!-- Kaksha Parsana -->
                 <div onclick="openTeamModal('kaksha')" style="background:rgba(0,0,0,0.25);border:1.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.25s;" onmouseover="this.style.borderColor='#34d399';this.style.transform='translateY(-6px)';this.style.background='rgba(52,211,153,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.transform='none';this.style.background='rgba(0,0,0,0.25)'">
                     <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(16,185,129,0.8),rgba(5,150,105,0.9));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff;margin:0 auto 16px;box-shadow:0 8px 24px rgba(16,185,129,0.3);">K</div>
                     <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:5px;">Kaksha Parsana</div>
@@ -621,7 +584,6 @@
             </div>
         </div>
 
-        <!-- Team Member Modal -->
         <div id="teamModal" class="modal" onclick="if(event.target===this)closeModal('teamModal')">
             <div id="teamModalBox" style="background:#00352F;border:2px solid rgba(206,220,0,0.25);border-radius:28px;padding:36px 28px;width:100%;max-width:440px;position:relative;text-align:center;max-height:90vh;overflow-y:auto;">
                 <button class="modal-close" onclick="closeModal('teamModal')">&#10005;</button>
@@ -639,7 +601,6 @@
     </div>
 </section>
 
-<!-- ======================== CONTACT / HELP ======================== -->
 <section id="help" class="section" style="background:rgba(0,0,0,0.1);">
     <div class="section-inner">
         <p style="font-size:11px;font-weight:800;color:var(--lime);letter-spacing:0.2em;text-transform:uppercase;margin:0 0 12px;">Support & Contact</p>
@@ -715,7 +676,6 @@
     </div>
 </section>
 
-<!-- ======================== FOOTER ======================== -->
 <footer>
     <div class="footer-inner">
         <div>
@@ -744,19 +704,15 @@
     <p class="footer-copy">© 2025 SmartFinder. All rights reserved. | Made with ❤️ in Surat, Gujarat</p>
 </footer>
 
-<!-- ======================== TOAST ======================== -->
-<!-- ======================== AI FLOATING BUTTON ======================== -->
 <button id="aiFloatBtn" onclick="openAIPlanner()" title="AI PG Finder" style="position:fixed;bottom:30px;right:30px;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#CEDC00,#a8b800);color:#00352F;border:none;border-radius:999px;padding:14px 22px;font-size:12px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;z-index:900;box-shadow:0 8px 30px rgba(206,220,0,0.45);transition:all 0.3s;font-family:'DM Sans',sans-serif;">
     <span style="font-size:20px;">🤖</span>
     <span>AI Finder</span>
 </button>
 
-<!-- ======================== AI PLANNER MODAL ======================== -->
 <div id="aiPlannerModal" class="modal">
     <div style="background:#00352F;border:2px solid rgba(206,220,0,0.35);border-radius:28px;padding:36px;width:100%;max-width:600px;position:relative;max-height:92vh;overflow-y:auto;">
         <button class="modal-close" onclick="closeModal('aiPlannerModal')">✕</button>
 
-        <!-- Step indicator -->
         <div style="display:flex;align-items:center;gap:0;margin-bottom:28px;" id="aiStepBar">
             <div class="ai-step active" id="stepDot1">1</div>
             <div style="flex:1;height:2px;background:rgba(255,255,255,0.1);"></div>
@@ -767,7 +723,6 @@
             <div class="ai-step" id="stepDot4">🤖</div>
         </div>
 
-        <!-- STEP 1: College & Budget -->
         <div id="aiStep1">
             <p style="font-size:10px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:0.15em;margin:0 0 8px;">Step 1 of 3</p>
             <h2 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin:0 0 8px;">Your College &amp; Budget</h2>
@@ -809,7 +764,6 @@
             <button onclick="goStep(2)" style="width:100%;padding:15px;background:var(--lime);color:#00352F;border:none;border-radius:12px;font-size:12px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;">Next →</button>
         </div>
 
-        <!-- STEP 2: Priorities -->
         <div id="aiStep2" style="display:none;">
             <p style="font-size:10px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:0.15em;margin:0 0 8px;">Step 2 of 3</p>
             <h2 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin:0 0 8px;">Set Your Priorities</h2>
@@ -832,7 +786,6 @@
             </div>
         </div>
 
-        <!-- STEP 3: Lifestyle -->
         <div id="aiStep3" style="display:none;">
             <p style="font-size:10px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:0.15em;margin:0 0 8px;">Step 3 of 3</p>
             <h2 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin:0 0 8px;">Your Lifestyle</h2>
@@ -877,7 +830,6 @@
             </div>
         </div>
 
-        <!-- STEP 4: Results -->
         <div id="aiStep4" style="display:none;">
             <div id="aiLoadingState" style="text-align:center;padding:48px 0;">
                 <div style="width:52px;height:52px;border-radius:50%;border:3px solid rgba(206,220,0,0.2);border-top-color:var(--lime);animation:aiSpin 0.8s linear infinite;margin:0 auto 20px;"></div>
@@ -903,7 +855,6 @@
 
 <div id="toast"></div>
 
-<!-- ======================== AUTH MODAL ======================== -->
 <div id="authModal" class="modal">
     <div class="modal-box">
         <button class="modal-close" onclick="closeModal('authModal')">&#10005;</button>
@@ -926,7 +877,6 @@
     </div>
 </div>
 
-<!-- ======================== PROFILE MODAL ======================== -->
 <div id="profileModal" class="modal">
     <div class="profile-modal-box">
         <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
@@ -991,14 +941,12 @@
     </div>
 </div>
 
-<!-- ======================== PG DETAIL MODAL ======================== -->
 <div id="pgDetailModal" class="modal">
     <div class="detail-modal-box">
         <button class="modal-close" onclick="closeModal('pgDetailModal')">✕</button>
         <img id="detailHeroImg" src="" alt="" class="detail-img-hero">
         <div class="detail-body">
             <div style="display:grid;grid-template-columns:1fr 340px;gap:40px;">
-                <!-- Left -->
                 <div>
                     <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
                         <div>
@@ -1018,20 +966,17 @@
                         <p id="detailDesc" style="font-size:13px;line-height:1.8;color:rgba(255,255,255,0.6);margin:0;"></p>
                     </div>
 
-                    <!-- Amenities -->
                     <div style="margin-bottom:24px;">
                         <h4 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;margin:0 0 14px;text-transform:uppercase;letter-spacing:0.05em;">Amenities</h4>
                         <div id="detailAmenities" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
                     </div>
 
-                    <!-- Map -->
                     <div style="margin-bottom:24px;">
                         <h4 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;margin:0 0 14px;text-transform:uppercase;letter-spacing:0.05em;">Location on Map</h4>
                         <div id="pgDetailMap"></div>
                         <p id="detailAddress" style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:10px;"></p>
                     </div>
 
-                    <!-- Owner Contact -->
                     <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(206,220,0,0.15);border-radius:16px;padding:20px;margin-bottom:24px;">
                         <h4 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;margin:0 0 16px;text-transform:uppercase;letter-spacing:0.05em;">Owner Contact</h4>
                         <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
@@ -1048,7 +993,6 @@
                     </div>
                 </div>
 
-                <!-- Right: Roommates -->
                 <div>
                     <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:24px;margin-bottom:20px;">
                         <h4 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;margin:0 0 20px;text-transform:uppercase;letter-spacing:0.05em;">Current Roommates</h4>
@@ -1066,11 +1010,8 @@
     </div>
 </div>
 
-<!-- ======================== JAVASCRIPT ======================== -->
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-// ──────────────────────────────────────────
-// FIREBASE
-// ──────────────────────────────────────────
+
 const firebaseConfig = {
     apiKey: "YOUR_API_KEY_HERE",
     authDomain: "smartfinder-f0df9.firebaseapp.com",
@@ -1084,9 +1025,6 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-// ──────────────────────────────────────────
-// PG DATABASE — Extended
-// ──────────────────────────────────────────
 const pgData = [
     {
         id:1, name:"The Vesu Loft", area:"Vesu", rent:12000, type:"AC", capacity:2,
@@ -1227,17 +1165,12 @@ const pgData = [
     }
 ];
 
-// ──────────────────────────────────────────
-// STATE
-// ──────────────────────────────────────────
+
 let favorites = new Set();
 let isLoginView = true;
 let isEditMode = false;
 let currentDetailMap = null;
 
-// ──────────────────────────────────────────
-// TOAST
-// ──────────────────────────────────────────
 function showToast(msg) {
     const t = document.getElementById('toast');
     t.innerText = msg;
@@ -1245,9 +1178,6 @@ function showToast(msg) {
     setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-// ──────────────────────────────────────────
-// MODAL HELPERS
-// ──────────────────────────────────────────
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 // Close on backdrop click
@@ -1255,9 +1185,6 @@ document.querySelectorAll('.modal').forEach(m => {
     m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
 });
 
-// ──────────────────────────────────────────
-// RENDER PGs
-// ──────────────────────────────────────────
 function renderPGs() {
     const maxRent   = +document.getElementById('priceRange').value;
     const selCap    = document.getElementById('capacityFilter').value;
@@ -1329,14 +1256,11 @@ function renderPGs() {
     }).join('');
 }
 
-// ──────────────────────────────────────────
-// PG DETAIL MODAL
-// ──────────────────────────────────────────
 function openPGDetail(id) {
     const pg = allPGs.find(p => p.id === id);
     if (!pg) return;
 
-    // Basic info
+    
     document.getElementById('detailHeroImg').src = pg.img;
     document.getElementById('detailName').innerText = pg.name;
     document.getElementById('detailArea').innerText = `${pg.area}, Surat`;
@@ -1345,7 +1269,7 @@ function openPGDetail(id) {
     document.getElementById('detailDesc').innerText = pg.desc;
     document.getElementById('detailAddress').innerText = `📍 ${pg.address}`;
 
-    // Badges
+    
     const badges = [];
     if (pg.type==='AC') badges.push('<span class="badge badge-ac">AC</span>');
     if (pg.wifi) badges.push('<span class="badge badge-wifi">WiFi</span>');
@@ -1354,20 +1278,20 @@ function openPGDetail(id) {
     badges.push(`<span class="info-chip">👥 ${pg.capacity}-sharing</span>`);
     document.getElementById('detailBadges').innerHTML = badges.join('');
 
-    // Amenities
+    
     const amenIcons = { WiFi:'📶', AC:'❄️', Mess:'🍱', 'Hot Water':'🚿', Laundry:'👕', CCTV:'📹', 'Power Backup':'⚡', Parking:'🅿️', Gym:'💪', Terrace:'🌅', Kitchen:'🍳', 'Study Room':'📚', 'Housekeeping':'🧹', Balcony:'🌇', 'Study Lounge':'📖' };
     document.getElementById('detailAmenities').innerHTML = (pg.amenities||[]).map(a =>
         `<span class="info-chip">${amenIcons[a]||'✔️'} ${a}</span>`
     ).join('');
 
-    // Owner
+    
     document.getElementById('ownerAvatar').innerText = pg.owner.initials;
     document.getElementById('ownerName').innerText = pg.owner.name;
     document.getElementById('ownerPhone').innerText = pg.owner.phone;
     document.getElementById('ownerCallBtn').href = `tel:${pg.owner.phone.replace(/\s/g,'')}`;
     document.getElementById('ownerWhatsBtn').href = `https://wa.me/${pg.owner.phone.replace(/[\s\+]/g,'').replace(/^0/,'91')}?text=Hi,%20I%20found%20your%20PG%20${encodeURIComponent(pg.name)}%20on%20SmartFinder.%20Is%20it%20available?`;
 
-    // Roommates
+
     const rContainer = document.getElementById('roommatesContainer');
     const occupied = (pg.roommates||[]).filter(r => r.name);
     const vacant   = pg.capacity - occupied.length;
@@ -1385,7 +1309,7 @@ function openPGDetail(id) {
 
     openModal('pgDetailModal');
 
-    // Map — destroy old instance if exists
+
     setTimeout(() => {
         const mapEl = document.getElementById('pgDetailMap');
         mapEl.innerHTML = '';
@@ -1399,9 +1323,7 @@ function openPGDetail(id) {
     }, 200);
 }
 
-// ──────────────────────────────────────────
-// FAVORITES
-// ──────────────────────────────────────────
+
 function toggleFavorite(id) {
     if (favorites.has(id)) favorites.delete(id); else favorites.add(id);
     renderPGs();
@@ -1425,9 +1347,7 @@ function renderFavorites() {
         `).join('');
 }
 
-// ──────────────────────────────────────────
-// HERO SLIDER
-// ──────────────────────────────────────────
+
 function startHeroSlider() {
     const slides = document.querySelectorAll('.slide');
     if (!slides.length) return;
@@ -1439,9 +1359,7 @@ function startHeroSlider() {
     }, 5000);
 }
 
-// ──────────────────────────────────────────
-// FILTERS
-// ──────────────────────────────────────────
+
 function clearFilters() {
     var af = document.getElementById("areaFilter"); if(af) af.value = "All";
     document.getElementById('priceRange').value = 20000;
@@ -1456,9 +1374,6 @@ function clearFilters() {
     renderPGs();
 }
 
-// ──────────────────────────────────────────
-// CONTACT FORM
-// ──────────────────────────────────────────
 async function submitContact() {
     const name  = document.getElementById('contactName').value.trim();
     const email = document.getElementById('contactEmail').value.trim();
@@ -1476,9 +1391,6 @@ async function submitContact() {
     }
 }
 
-// ──────────────────────────────────────────
-// AUTH
-// ──────────────────────────────────────────
 function handleAuthClick() {
     if (auth.currentUser) { renderFavorites(); openModal('profileModal'); }
     else openModal('authModal');
@@ -1544,9 +1456,6 @@ function handleLogout() {
     });
 }
 
-// ──────────────────────────────────────────
-// PROFILE
-// ──────────────────────────────────────────
 function toggleEditMode(forceEdit = false) {
     isEditMode = forceEdit ? true : !isEditMode;
     const inputs = document.querySelectorAll('#extraInfoForm input, #extraInfoForm select');
@@ -1587,9 +1496,6 @@ function updateVerificationStatus(data) {
     }
 }
 
-// ──────────────────────────────────────────
-// AUTH STATE LISTENER
-// ──────────────────────────────────────────
 auth.onAuthStateChanged(async (user) => {
     if (user) {
         document.getElementById('authBtn').innerText = 'Profile';
@@ -1621,14 +1527,11 @@ auth.onAuthStateChanged(async (user) => {
     }
 });
 
-// ──────────────────────────────────────────
-// INIT
-// ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     renderPGs();
     startHeroSlider();
 
-    // Sync sidebar checkboxes with top-bar ones
+    
     ['wifiFilter','messFilter','vegFilter'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('change', () => {
@@ -1653,11 +1556,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(af) af.addEventListener('submit', handleEmailAuth);
 });
 
-
-
-// ==========================================
-// 50+ DUMMY PG DATA (Surat + Bardoli + Palsana)
-// ==========================================
 const extraPGs = [
     // ── VESU (10 PGs) ──
     { id:11, name:"Vesu Green Residency", area:"Vesu", rent:8500, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/Q3zvPVDK/52.webp", lat:21.1510, lng:72.7780, address:"22, Green Park Society, Vesu, Surat - 395007", desc:"Affordable AC PG with homely vegetarian mess. 10 min walk from SVNIT.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup"], owner:{name:"Jignesh Patel",phone:"+91 98250 11101",initials:"J"}, roommates:[{name:"Rohan Shah",college:"SVNIT",sem:"3rd",city:"Vadodara",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
@@ -1723,19 +1621,8 @@ const extraPGs = [
     { id:41, name:"Palsana AC Premium", area:"Palsana", rent:7500, type:"AC", capacity:1, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/4gtYk6WN/37.webp", lat:21.0790, lng:72.9645, address:"Premium Park, Palsana Town - 394315", desc:"Only premium AC PG in Palsana with attached bathroom and 24/7 hot water.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup","Laundry"], owner:{name:"Pravin Patel",phone:"+91 99786 21221",initials:"P"}, roommates:[] }
 ];
 
-// Combine all PGs
 const allPGs = pgData.concat(extraPGs);
 
-
- // 'student' | 'owner' | null
-
-
-
-// ── Role selector functions ──
-
-// ==========================================
-// AI COLLEGE COMMUTE PLANNER
-// ==========================================
 
 var AI_FUNCTION_URL = "/api/ai";
 
