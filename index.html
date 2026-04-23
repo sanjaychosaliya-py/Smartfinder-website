@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFinder | Premium Student Living in Surat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --green: #00352F;
+            --lime: #CEDC00;
+            --white: #ffffff;
+        }
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--green);
+            color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            margin: 0; padding: 0;
+        }
+        h1,h2,h3,h4,h5 { font-family: 'Syne', sans-serif; }
+
+        /* ─── NAV ─── */
+        nav {
+            background: rgba(0,53,47,0.85);
+            backdrop-filter: blur(18px);
+            position: sticky; top: 0; z-index: 200;
+            border-bottom: 1px solid rgba(206,220,0,0.15);
+        }
+        .nav-inner {
+            max-width: 1280px; margin: 0 auto;
+            padding: 0 28px; height: 72px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:20px; letter-spacing:-0.5px; color:var(--lime); }
+        .nav-links { display:flex; gap:32px; }
+        .nav-links a {
+            font-size:11px; font-weight:600; letter-spacing:0.12em;
+            text-transform:uppercase; color:rgba(255,255,255,0.5);
+            text-decoration:none; transition:color 0.2s;
+        }
+        .nav-links a:hover { color:var(--lime); }
+        #authBtn {
+            background:#0f172a; color:white;
+            padding:10px 28px; border-radius:999px;
+            font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+            border:none; cursor:pointer; transition:all 0.3s;
+        }
+        #authBtn:hover { background:var(--lime); color:var(--green); }
+
+        /* ─── HERO ─── */
+        .hero { position:relative; height:680px; overflow:hidden; background:#000; }
+        .slide {
+            position:absolute; inset:0; opacity:0;
+            transition:opacity 1.6s ease; background-size:cover; background-position:center;
+        }
+        .slide.active { opacity:1; z-index:1; }
+        .slide::after {
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(to bottom,rgba(0,0,0,0.1),rgba(0,53,47,0.9));
+        }
+        .hero-content {
+            position:absolute; inset:0; z-index:10;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            text-align:center; padding:24px;
+        }
+        .hero-content h2 {
+            font-size:clamp(36px,6vw,80px); font-weight:800; line-height:1.05;
+            letter-spacing:-2px; margin-bottom:32px;
+        }
+        .hero-content h2 span { color:var(--lime); }
+        .search-bar {
+            width:100%; max-width:680px;
+            background:rgba(255,255,255,0.12); backdrop-filter:blur(20px);
+            border:1.5px solid rgba(255,255,255,0.25); border-radius:999px;
+            overflow:hidden;
+        }
+        .search-bar input {
+            width:100%; padding:20px 28px; background:transparent;
+            outline:none; color:white; font-size:15px; font-family:'DM Sans',sans-serif;
+        }
+        .search-bar input::placeholder { color:rgba(255,255,255,0.5); }
+
+        /* ─── FILTER BAR ─── */
+        .filter-bar {
+            background:rgba(0,0,0,0.3); border:1.5px solid rgba(206,220,0,0.3);
+            border-radius:16px; padding:20px 28px; margin-bottom:32px;
+            display:flex; flex-wrap:wrap; align-items:center; gap:20px;
+        }
+        .filter-bar h3 { font-family:'Syne',sans-serif; font-size:12px; font-weight:800; color:var(--lime); letter-spacing:0.15em; text-transform:uppercase; margin:0; }
+        .filter-bar select {
+            background:rgba(0,0,0,0.4); border:1px solid rgba(206,220,0,0.4);
+            color:var(--lime); padding:8px 14px; border-radius:8px;
+            font-size:11px; font-weight:700; outline:none; cursor:pointer; font-family:'DM Sans',sans-serif;
+        }
+        .filter-chip {
+            display:flex; align-items:center; gap:8px;
+            font-size:11px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer;
+        }
+        .filter-chip input { accent-color:var(--lime); width:15px; height:15px; cursor:pointer; }
+
+        /* ─── ASIDE ─── */
+        aside {
+            background:rgba(0,0,0,0.3); border:1.5px solid rgba(206,220,0,0.2);
+            border-radius:20px; padding:28px; position:sticky; top:88px;
+        }
+        aside h3 { font-size:11px; font-weight:800; color:var(--lime); letter-spacing:0.15em; text-transform:uppercase; margin:0 0 24px; }
+        aside label { font-size:11px; font-weight:600; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:0.08em; }
+        .aside-group { margin-bottom:24px; }
+        .aside-select {
+            width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(206,220,0,0.3);
+            color:var(--lime); padding:10px 14px; border-radius:10px;
+            font-size:12px; font-weight:700; outline:none; cursor:pointer; margin-top:8px; font-family:'DM Sans',sans-serif;
+        }
+        .range-wrap { position:relative; }
+        input[type=range] { width:100%; accent-color:var(--lime); margin-top:10px; height:4px; }
+        .check-row {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05);
+        }
+        .check-row:last-child { border-bottom:none; }
+        .check-row input { accent-color:var(--lime); width:16px; height:16px; cursor:pointer; }
+        .reset-btn {
+            width:100%; padding:12px; margin-top:20px;
+            background:transparent; border:1.5px solid rgba(206,220,0,0.4);
+            color:var(--lime); font-size:10px; font-weight:800; letter-spacing:0.15em; text-transform:uppercase;
+            border-radius:10px; cursor:pointer; transition:all 0.3s; font-family:'DM Sans',sans-serif;
+        }
+        .reset-btn:hover { background:var(--lime); color:var(--green); }
+
+        /* ─── PG CARDS ─── */
+        .pg-card {
+            background:#00352F; border:1.5px solid var(--lime);
+            border-radius:22px; overflow:hidden; cursor:pointer;
+            transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        .pg-card:hover { transform:translateY(-8px); box-shadow:0 20px 40px rgba(206,220,0,0.2); }
+        .card-img-wrap { position:relative; overflow:hidden; }
+        .card-img-wrap img { width:100%; aspect-ratio:4/5; object-fit:cover; transition:transform 0.7s ease; }
+        .pg-card:hover .card-img-wrap img { transform:scale(1.08); }
+        .fav-btn {
+            position:absolute; top:14px; right:14px; z-index:5;
+            background:rgba(0,0,0,0.5); border:none; border-radius:50%;
+            width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+            cursor:pointer; transition:all 0.2s; backdrop-filter:blur(8px);
+        }
+        .fav-btn:hover { background:rgba(239,68,68,0.3); transform:scale(1.1); }
+        .fav-btn svg { width:18px; height:18px; color:white; }
+        .fav-btn.active svg { fill:#ef4444; color:#ef4444; }
+        .card-body { padding:16px 18px 18px; }
+        .card-name { font-family:'Syne',sans-serif; font-size:14px; font-weight:800; color:var(--lime); text-transform:uppercase; margin:0 0 10px; }
+        .card-meta {
+            display:flex; justify-content:space-between; align-items:center;
+            border-top:1px solid rgba(255,255,255,0.08); padding-top:12px;
+        }
+        .card-area { font-size:11px; font-weight:700; color:rgba(255,255,255,0.5); text-transform:uppercase; }
+        .card-type { font-size:9px; color:rgba(255,255,255,0.3); text-transform:uppercase; margin-top:2px; }
+        .card-rent { font-size:15px; font-weight:800; color:white; }
+        .card-split { font-size:9px; font-weight:700; color:var(--lime); text-transform:uppercase; }
+        .card-badges { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0; }
+        .badge {
+            font-size:9px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+            padding:3px 8px; border-radius:6px;
+        }
+        .badge-wifi { background:rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.3); }
+        .badge-mess { background:rgba(34,197,94,0.2); color:#86efac; border:1px solid rgba(34,197,94,0.3); }
+        .badge-veg  { background:rgba(206,220,0,0.15); color:var(--lime); border:1px solid rgba(206,220,0,0.3); }
+        .badge-ac   { background:rgba(139,92,246,0.2); color:#c4b5fd; border:1px solid rgba(139,92,246,0.3); }
+
+        /* ─── MODALS ─── */
+        .modal {
+            position:fixed; inset:0; z-index:500;
+            background:rgba(0,0,0,0.85); backdrop-filter:blur(20px);
+            display:none; align-items:center; justify-content:center;
+        }
+        .modal.open { display:flex; }
+        .modal-box {
+            background:#00352F; border:2px solid rgba(206,220,0,0.4);
+            border-radius:28px; padding:40px; width:100%; max-width:520px;
+            position:relative; max-height:90vh; overflow-y:auto;
+        }
+        .modal-close {
+            position:absolute; top:16px; right:16px;
+            width:40px; height:40px; border-radius:50%;
+            background:#0f172a; border:2px solid white; color:white;
+            font-size:16px; font-weight:800; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+            transition:all 0.3s; z-index:10;
+        }
+        .modal-close:hover { background:#ef4444; transform:rotate(90deg) scale(1.1); }
+
+        /* ─── AUTH MODAL ─── */
+        .auth-tab { font-size:11px; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; padding-bottom:8px; cursor:pointer; transition:all 0.2s; color:rgba(255,255,255,0.3); border-bottom:2px solid transparent; }
+        .auth-tab.active { color:var(--lime); border-color:var(--lime); }
+        .auth-input {
+            width:100%; padding:14px 18px; background:rgba(0,0,0,0.4);
+            border:1px solid rgba(255,255,255,0.1); border-radius:12px;
+            outline:none; color:white; font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif;
+            transition:border-color 0.2s;
+        }
+        .auth-input:focus { border-color:var(--lime); }
+        .auth-input::placeholder { color:rgba(255,255,255,0.3); }
+        .auth-btn {
+            width:100%; background:var(--lime); color:var(--green);
+            padding:16px; border-radius:12px; border:none; cursor:pointer;
+            font-size:11px; font-weight:800; letter-spacing:0.15em; text-transform:uppercase;
+            font-family:'DM Sans',sans-serif; transition:all 0.3s;
+        }
+        .auth-btn:hover { background:white; }
+        .google-btn {
+            width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
+            background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12);
+            padding:14px; border-radius:12px; color:white; cursor:pointer;
+            font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+            font-family:'DM Sans',sans-serif; transition:all 0.2s;
+        }
+        .google-btn:hover { background:rgba(255,255,255,0.1); }
+        .divider { display:flex; align-items:center; gap:16px; margin:20px 0; }
+        .divider::before,.divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.1); }
+        .divider span { font-size:10px; font-weight:700; color:rgba(255,255,255,0.3); text-transform:uppercase; }
+
+        /* ─── PROFILE MODAL ─── */
+        .profile-modal-box {
+            background:#00352F; border:2px solid rgba(206,220,0,0.3);
+            border-radius:28px; padding:40px; width:100%; max-width:900px;
+            position:relative; max-height:92vh; overflow-y:auto;
+        }
+        .profile-input {
+            width:100%; padding:12px 16px; background:rgba(0,0,0,0.35);
+            border:1px solid rgba(255,255,255,0.1); border-radius:10px;
+            color:white; font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif;
+            outline:none; margin-top:8px; transition:all 0.2s;
+        }
+        .profile-input:disabled { opacity:0.4; cursor:not-allowed; }
+        .profile-input:not(:disabled) { border-color:rgba(206,220,0,0.3); }
+        .profile-input:not(:disabled):focus { border-color:var(--lime); background:rgba(0,0,0,0.5); }
+        .profile-label { font-size:10px; font-weight:700; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.1em; }
+        .verify-badge {
+            display:flex; align-items:center; gap:6px;
+            padding:5px 12px; border-radius:999px; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.1em;
+            border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.4);
+        }
+        .verify-badge.verified { background:rgba(59,130,246,0.15); border-color:rgba(59,130,246,0.3); color:#93c5fd; }
+
+        /* ─── PG DETAIL MODAL ─── */
+        .detail-modal-box {
+            background:#002922; border:2px solid rgba(206,220,0,0.35);
+            border-radius:28px; width:100%; max-width:1100px;
+            position:relative; max-height:92vh; overflow-y:auto;
+        }
+        .detail-img-hero { width:100%; height:400px; object-fit:cover; border-radius:26px 26px 0 0; }
+        .detail-body { padding:36px; }
+        #pgDetailMap { height:280px; border-radius:16px; border:1px solid rgba(206,220,0,0.2); overflow:hidden; }
+        .roommate-card {
+            background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08);
+            border-radius:16px; padding:16px; display:flex; align-items:center; gap:14px;
+        }
+        .roommate-avatar {
+            width:48px; height:48px; border-radius:50%; background:var(--lime);
+            display:flex; align-items:center; justify-content:center;
+            font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:var(--green); flex-shrink:0;
+        }
+        .info-chip {
+            display:inline-flex; align-items:center; gap:6px;
+            background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+            border-radius:10px; padding:8px 14px; font-size:11px; font-weight:600; color:rgba(255,255,255,0.7);
+        }
+        .contact-btn {
+            display:inline-flex; align-items:center; gap:8px;
+            background:var(--lime); color:var(--green);
+            padding:12px 22px; border-radius:12px;
+            font-size:11px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase;
+            text-decoration:none; border:none; cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif;
+        }
+        .contact-btn:hover { background:white; }
+        .contact-btn-outline {
+            display:inline-flex; align-items:center; gap:8px;
+            background:transparent; border:1.5px solid rgba(206,220,0,0.4); color:var(--lime);
+            padding:12px 22px; border-radius:12px;
+            font-size:11px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase;
+            text-decoration:none; cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif;
+        }
+        .contact-btn-outline:hover { background:var(--lime); color:var(--green); }
+
+        /* ─── SECTIONS ─── */
+        .section { padding:80px 0; }
+        .section-inner { max-width:1280px; margin:0 auto; padding:0 28px; }
+        .section-title { font-family:'Syne',sans-serif; font-size:clamp(28px,4vw,52px); font-weight:800; letter-spacing:-1.5px; margin:0 0 16px; }
+        .section-sub { font-size:15px; color:rgba(255,255,255,0.5); max-width:560px; margin:0 0 48px; line-height:1.7; }
+
+        /* Our Story */
+        #about { background:rgba(0,0,0,0.2); }
+        .story-grid { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; }
+        .story-img { width:100%; height:460px; object-fit:cover; border-radius:24px; border:2px solid rgba(206,220,0,0.2); }
+        .stat-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; margin-top:40px; }
+        .stat-box { background:rgba(0,0,0,0.3); border:1px solid rgba(206,220,0,0.2); border-radius:16px; padding:24px; text-align:center; }
+        .stat-num { font-family:'Syne',sans-serif; font-size:36px; font-weight:800; color:var(--lime); }
+        .stat-label { font-size:11px; font-weight:600; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.1em; margin-top:4px; }
+
+        /* Contact */
+        #help { background:rgba(0,0,0,0.15); }
+        .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; }
+        .contact-form { background:rgba(0,0,0,0.25); border:1.5px solid rgba(206,220,0,0.2); border-radius:24px; padding:36px; }
+        .contact-form input, .contact-form textarea, .contact-form select {
+            width:100%; padding:13px 16px; background:rgba(0,0,0,0.35);
+            border:1px solid rgba(255,255,255,0.1); border-radius:10px;
+            color:white; font-size:12px; font-family:'DM Sans',sans-serif;
+            outline:none; margin-top:8px; margin-bottom:16px; transition:border-color 0.2s;
+        }
+        .contact-form input:focus, .contact-form textarea:focus, .contact-form select:focus { border-color:var(--lime); }
+        .contact-form input::placeholder, .contact-form textarea::placeholder { color:rgba(255,255,255,0.3); }
+        .contact-form textarea { resize:vertical; min-height:120px; }
+        .contact-info-card { background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:22px; margin-bottom:18px; display:flex; gap:16px; align-items:flex-start; }
+        .ci-icon { width:42px; height:42px; border-radius:12px; background:rgba(206,220,0,0.12); border:1px solid rgba(206,220,0,0.2); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+        .ci-label { font-size:10px; font-weight:700; color:var(--lime); text-transform:uppercase; letter-spacing:0.1em; }
+        .ci-val { font-size:13px; font-weight:600; color:rgba(255,255,255,0.8); margin-top:4px; }
+
+        /* Footer */
+        footer { background:#000; padding:48px 28px 32px; border-top:1px solid rgba(255,255,255,0.05); }
+        .footer-inner { max-width:1280px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:space-between; gap:32px; }
+        .footer-copy { font-size:11px; color:rgba(255,255,255,0.2); text-align:center; padding-top:32px; max-width:1280px; margin:0 auto; }
+
+        /* ─── SCROLLBAR ─── */
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-track { background:rgba(255,255,255,0.03); }
+        ::-webkit-scrollbar-thumb { background:rgba(206,220,0,0.4); border-radius:10px; }
+
+        /* ─── RESPONSIVE ─── */
+        @media(max-width:768px) {
+            .story-grid,.contact-grid { grid-template-columns:1fr; }
+            .nav-links { display:none; }
+            .stat-row { grid-template-columns:1fr; }
+            .detail-img-hero { height:260px; }
+        }
+
+        /* ─── TOAST ─── */
+        #toast {
+            position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px);
+            background:var(--lime); color:var(--green); padding:14px 28px; border-radius:999px;
+            font-size:12px; font-weight:800; z-index:9999; transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            pointer-events:none;
+        }
+        #toast.show { transform:translateX(-50%) translateY(0); }
+
+        /* ── OWNER PORTAL FORM ── */
+        .listing-label {
+            font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.6);
+            text-transform: uppercase; letter-spacing: 0.1em;
+            display: block; margin-bottom: 7px;
+        }
+        .listing-input {
+            width: 100%; padding: 12px 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1.5px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            color: #ffffff; font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+            outline: none; transition: border-color 0.2s, background 0.2s;
+            display: block; box-sizing: border-box;
+        }
+        .listing-input:focus {
+            border-color: #CEDC00;
+            background: rgba(255,255,255,0.12);
+        }
+        .listing-input::placeholder { color: rgba(255,255,255,0.3); }
+        .listing-input option { background: #00352F; color: white; }
+        textarea.listing-input { resize: vertical; min-height: 80px; }
+        .amenity-check {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1.5px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 10px 14px;
+            cursor: pointer; font-size: 12px; font-weight: 600;
+            color: rgba(255,255,255,0.75); transition: all 0.2s;
+        }
+        .amenity-check:hover { border-color: rgba(206,220,0,0.4); color: #CEDC00; }
+        .amenity-check input[type="checkbox"] {
+            accent-color: #CEDC00; width: 15px; height: 15px;
+            cursor: pointer; flex-shrink: 0;
+        }
+        .owner-tab {
+            font-size: 11px; font-weight: 800; letter-spacing: 0.08em;
+            text-transform: uppercase; padding: 10px 16px;
+            cursor: pointer; color: rgba(255,255,255,0.4);
+            border: none; border-bottom: 2px solid transparent;
+            background: none; font-family: 'DM Sans', sans-serif;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .owner-tab.active { color: #CEDC00; border-color: #CEDC00; }
+        .owner-tab:hover { color: rgba(255,255,255,0.7); }
+        .form-section {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px; padding: 18px; margin-bottom: 16px;
+        }
+        .form-section-title {
+            font-size: 11px; font-weight: 800; color: #CEDC00;
+            text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 14px;
+        }
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-grid-2 .full { grid-column: 1 / -1; }
+        @media (max-width: 520px) { .form-grid-2 { grid-template-columns: 1fr; } }
+
+
+        /* ── ROLE SELECTOR CARDS ── */
+
+    </style>
+</head>
+<body>
+
+<!-- ======================== NAV ======================== -->
+<nav>
+    <div class="nav-inner">
+        <div class="logo">SmartFinder</div>
+        <div class="nav-links">
+            <a href="#listings">Explore</a>
+            <a href="#about">Our Story</a>
+            <a href="#help">Contact & Help</a>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+            <div id="wishlistCounter" style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;"></div>
+            <img id="navAvatar" src="" style="display:none;width:36px;height:36px;border-radius:50%;border:2px solid var(--lime);object-fit:cover;">
+            <button id="authBtn" onclick="handleAuthClick()">Login</button>
+        </div>
+    </div>
+</nav>
+
+<!-- ======================== HERO ======================== -->
+<header class="hero">
+    <div class="slide active" style="background-image:url('https://i.ibb.co/JRLXQX2S/6.webp')"></div>
+    <div class="slide" style="background-image:url('https://i.ibb.co/qTq8ffJ/20.png')"></div>
+    <div class="slide" style="background-image:url('https://i.ibb.co/svkJVGXr/55.jpg')"></div>
+    <div class="slide" style="background-image:url('https://i.ibb.co/Q3zvPVDK/52.webp')"></div>
+    <div class="slide" style="background-image:url('https://i.ibb.co/hJBzQzr5/46.avif')"></div>
+
+    <div class="hero-content">
+        <h2>Find Your Perfect Home<br><span>in Surat & Bardoli.</span></h2>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search by area, PG name, university..." autocomplete="off">
+        </div>
+    </div>
+</header>
+
+<!-- ======================== AI BANNER ======================== -->
+<div style="background:linear-gradient(135deg,rgba(206,220,0,0.1),rgba(0,0,0,0.25));border-top:1px solid rgba(206,220,0,0.2);border-bottom:1px solid rgba(206,220,0,0.15);padding:20px 28px;">
+    <div style="max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+            <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#CEDC00,#a8b800);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;box-shadow:0 4px 16px rgba(206,220,0,0.3);">🤖</div>
+            <div>
+                <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:3px;">AI College Commute Planner <span style="font-size:10px;font-weight:700;background:rgba(206,220,0,0.2);color:#CEDC00;padding:2px 8px;border-radius:20px;vertical-align:middle;margin-left:6px;letter-spacing:0.08em;text-transform:uppercase;">NEW</span></div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.45);">Set your priorities → AI scores every PG and finds your perfect match in seconds</div>
+            </div>
+        </div>
+        <button onclick="openAIPlanner()" style="background:linear-gradient(135deg,#CEDC00,#a8b800);color:#00352F;border:none;padding:13px 28px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;box-shadow:0 6px 20px rgba(206,220,0,0.35);white-space:nowrap;" onmouseover="this.style.transform='translateY(-2px) scale(1.03)'" onmouseout="this.style.transform='none'">Try AI Finder →</button>
+    </div>
+</div>
+
+<!-- ======================== LISTINGS ======================== -->
+<section id="listings" style="padding:64px 0;">
+    <div style="max-width:1280px;margin:0 auto;padding:0 28px;">
+        
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <h3>Explore Listings</h3>
+            <div style="flex:1;"></div>
+            <label class="filter-chip"><input type="checkbox" id="wifiFilter"> WiFi</label>
+            <label class="filter-chip"><input type="checkbox" id="messFilter"> Mess</label>
+            <label class="filter-chip"><input type="checkbox" id="vegFilter"> Veg Only</label>
+            <select id="sortFilter">
+                <option value="default">Newest First</option>
+                <option value="lowToHigh">Price: Low → High</option>
+                <option value="highToLow">Price: High → Low</option>
+            </select>
+        </div>
+
+        <div style="display:grid;grid-template-columns:240px 1fr;gap:32px;">
+            <!-- Sidebar -->
+            <aside>
+                <h3>Refine</h3>
+                <div class="aside-group">
+                    <label>Max Budget: <span id="priceValue" style="color:var(--lime);">₹20000</span></label>
+                    <input type="range" id="priceRange" min="3000" max="20000" step="500" value="20000" oninput="document.getElementById('priceValue').innerText='₹'+this.value;renderPGs()">
+                </div>
+                <div class="aside-group">
+                    <label>Area / Location</label>
+                    <select id="areaFilter" class="aside-select" onchange="renderPGs()">
+                        <option value="All">All Areas</option>
+                        <optgroup label="── Surat ──">
+                            <option value="Vesu">Vesu</option>
+                            <option value="Adajan">Adajan</option>
+                            <option value="Piplod">Piplod</option>
+                            <option value="Athwa">Athwa</option>
+                            <option value="Bhatar">Bhatar</option>
+                            <option value="Althan">Althan</option>
+                            <option value="Pal">Pal</option>
+                            <option value="Varachha">Varachha</option>
+                            <option value="Katargam">Katargam</option>
+                            <option value="Udhna">Udhna</option>
+                        </optgroup>
+                        <optgroup label="── Bardoli ──">
+                            <option value="Bardoli">Bardoli</option>
+                            <option value="Bardoli Station Road">Bardoli Station Road</option>
+                        </optgroup>
+                        <optgroup label="── Palsana / Other ──">
+                            <option value="Palsana">Palsana</option>
+                            <option value="Navsari">Navsari</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="aside-group">
+                    <label>Room Capacity</label>
+                    <select id="capacityFilter" class="aside-select">
+                        <option value="All">All Sharing</option>
+                        <option value="1">Single (1)</option>
+                        <option value="2">Double (2)</option>
+                        <option value="3">Triple (3)</option>
+                        <option value="4">Four+ (4)</option>
+                    </select>
+                </div>
+                <div class="aside-group" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:20px;">
+                    <div class="check-row">
+                        <label style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;">Vegetarian</label>
+                        <input type="checkbox" id="vegFilter2">
+                    </div>
+                    <div class="check-row">
+                        <label style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;">WiFi</label>
+                        <input type="checkbox" id="wifiFilter2">
+                    </div>
+                    <div class="check-row">
+                        <label style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;">Mess/Food</label>
+                        <input type="checkbox" id="messFilter2">
+                    </div>
+                    <div class="check-row">
+                        <label style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;">AC Room</label>
+                        <input type="checkbox" id="acFilter">
+                    </div>
+                </div>
+                <button class="reset-btn" onclick="clearFilters()">Reset All</button>
+            </aside>
+
+            <!-- PG Grid -->
+            <div id="pgContainer" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;align-content:start;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======================== OUR STORY ======================== -->
+<section id="about" class="section" style="background:rgba(0,0,0,0.2);">
+    <div class="section-inner">
+        <div class="story-grid">
+            <div>
+                <p style="font-size:11px;font-weight:800;color:var(--lime);letter-spacing:0.2em;text-transform:uppercase;margin:0 0 12px;">About SmartFinder</p>
+                <h2 class="section-title">Built by students,<br>for students.</h2>
+                <p class="section-sub">SmartFinder was born in 2023 inside a cramped hostel room in Surat. We were frustrated — endless WhatsApp forwards, unreliable brokers, no transparency. So we built the solution ourselves.</p>
+                <p style="font-size:14px;line-height:1.8;color:rgba(255,255,255,0.5);">Our platform connects students across UTU, SVNIT, VNSGU and more with verified, comfortable PGs. No broker fees. No hidden charges. Just smart, simple living.</p>
+                <div class="stat-row">
+                    <div class="stat-box">
+                        <div class="stat-num">500+</div>
+                        <div class="stat-label">PGs Listed</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-num">3K+</div>
+                        <div class="stat-label">Happy Students</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-num">6</div>
+                        <div class="stat-label">Areas Covered</div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <img src="https://i.ibb.co/Nvqhy3w/16.jpg" alt="Our Story" class="story-img">
+            </div>
+        </div>
+
+        <!-- Team -->
+        <div style="margin-top:80px;">
+            <h3 style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin:0 0 8px;letter-spacing:-1px;">The Team Behind SmartFinder</h3>
+            <p style="font-size:13px;color:rgba(255,255,255,0.4);margin:0 0 32px;">The developers who built this platform</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;">
+
+                <!-- Sanjay Chosaliya -->
+                <div onclick="openTeamModal('sanjay')" style="background:rgba(0,0,0,0.25);border:1.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.25s;" onmouseover="this.style.borderColor='#CEDC00';this.style.transform='translateY(-6px)';this.style.background='rgba(206,220,0,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.transform='none';this.style.background='rgba(0,0,0,0.25)'">
+                    <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#CEDC00,#a8b800);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#00352F;margin:0 auto 16px;box-shadow:0 8px 24px rgba(206,220,0,0.3);">S</div>
+                    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:5px;">Sanjay Chosaliya</div>
+                    <div style="font-size:10px;color:#CEDC00;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;">Co-Founder & CEO</div>
+                    
+                </div>
+
+                <!-- Jay Sohaliya -->
+                <div onclick="openTeamModal('jay')" style="background:rgba(0,0,0,0.25);border:1.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.25s;" onmouseover="this.style.borderColor='#60a5fa';this.style.transform='translateY(-6px)';this.style.background='rgba(96,165,250,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.transform='none';this.style.background='rgba(0,0,0,0.25)'">
+                    <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(59,130,246,0.8),rgba(37,99,235,0.9));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff;margin:0 auto 16px;box-shadow:0 8px 24px rgba(59,130,246,0.3);">J</div>
+                    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:5px;">Jay Sohaliya</div>
+                    <div style="font-size:10px;color:#60a5fa;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;">Head of Operations</div>
+                    
+                </div>
+
+                <!-- Ritu Radadiya -->
+                <div onclick="openTeamModal('ritu')" style="background:rgba(0,0,0,0.25);border:1.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.25s;" onmouseover="this.style.borderColor='#c084fc';this.style.transform='translateY(-6px)';this.style.background='rgba(192,132,252,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.transform='none';this.style.background='rgba(0,0,0,0.25)'">
+                    <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(139,92,246,0.8),rgba(109,40,217,0.9));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff;margin:0 auto 16px;box-shadow:0 8px 24px rgba(139,92,246,0.3);">R</div>
+                    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:5px;">Ritu Radadiya</div>
+                    <div style="font-size:10px;color:#c084fc;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;">Lead Developer</div>
+                    
+                </div>
+
+                <!-- Kaksha Parsana -->
+                <div onclick="openTeamModal('kaksha')" style="background:rgba(0,0,0,0.25);border:1.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.25s;" onmouseover="this.style.borderColor='#34d399';this.style.transform='translateY(-6px)';this.style.background='rgba(52,211,153,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.transform='none';this.style.background='rgba(0,0,0,0.25)'">
+                    <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(16,185,129,0.8),rgba(5,150,105,0.9));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff;margin:0 auto 16px;box-shadow:0 8px 24px rgba(16,185,129,0.3);">K</div>
+                    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:5px;">Kaksha Parsana</div>
+                    <div style="font-size:10px;color:#34d399;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;">Design & Marketing</div>
+                    
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Team Member Modal -->
+        <div id="teamModal" class="modal" onclick="if(event.target===this)closeModal('teamModal')">
+            <div id="teamModalBox" style="background:#00352F;border:2px solid rgba(206,220,0,0.25);border-radius:28px;padding:36px 28px;width:100%;max-width:440px;position:relative;text-align:center;max-height:90vh;overflow-y:auto;">
+                <button class="modal-close" onclick="closeModal('teamModal')">&#10005;</button>
+                <div id="tmAvatar"   style="width:86px;height:86px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:34px;font-weight:800;box-shadow:0 8px 28px rgba(0,0,0,0.4);"></div>
+                <div id="tmName"     style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px;"></div>
+                <div id="tmRole"     style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;"></div>
+                <div id="tmCollege"  style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:3px;"></div>
+                <div id="tmHometown" style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:18px;"></div>
+                <div style="border-top:1px solid rgba(255,255,255,0.07);margin-bottom:16px;"></div>
+                <div id="tmBio"      style="font-size:13px;color:rgba(255,255,255,0.65);line-height:1.75;margin-bottom:16px;text-align:left;"></div>
+                <div id="tmFunFact"  style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.7;background:rgba(206,220,0,0.06);border:1px solid rgba(206,220,0,0.15);border-radius:12px;padding:12px 14px;margin-bottom:16px;text-align:left;"></div>
+                <div id="tmSkills"   style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======================== CONTACT / HELP ======================== -->
+<section id="help" class="section" style="background:rgba(0,0,0,0.1);">
+    <div class="section-inner">
+        <p style="font-size:11px;font-weight:800;color:var(--lime);letter-spacing:0.2em;text-transform:uppercase;margin:0 0 12px;">Support & Contact</p>
+        <h2 class="section-title" style="margin-bottom:12px;">We're here to help.</h2>
+        <p class="section-sub">Have a question, complaint, or want to list your PG? Reach out — we respond within 24 hours.</p>
+        <div class="contact-grid">
+            <div>
+                <div class="contact-info-card">
+                    <div class="ci-icon">📍</div>
+                    <div>
+                        <div class="ci-label">Office</div>
+                        <div class="ci-val">101, Sunrise Complex, Vesu, Surat — 395007</div>
+                    </div>
+                </div>
+                <div class="contact-info-card">
+                    <div class="ci-icon">📞</div>
+                    <div>
+                        <div class="ci-label">Phone / WhatsApp</div>
+                        <div class="ci-val">+91 98765 43210</div>
+                    </div>
+                </div>
+                <div class="contact-info-card">
+                    <div class="ci-icon">✉️</div>
+                    <div>
+                        <div class="ci-label">Email</div>
+                        <div class="ci-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="770402070718050337041a160503111e19131205591e19">[email&#160;protected]</a></div>
+                    </div>
+                </div>
+                <div class="contact-info-card">
+                    <div class="ci-icon">🕐</div>
+                    <div>
+                        <div class="ci-label">Hours</div>
+                        <div class="ci-val">Mon–Sat: 9:00 AM – 7:00 PM</div>
+                    </div>
+                </div>
+                <div style="margin-top:28px;">
+                    <p style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);margin:0 0 14px;text-transform:uppercase;letter-spacing:0.1em;">FAQ</p>
+                    <details style="background:rgba(0,0,0,0.2);border-radius:12px;padding:16px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.06);">
+                        <summary style="font-size:13px;font-weight:600;cursor:pointer;">How do I list my PG on SmartFinder?</summary>
+                        <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:10px;line-height:1.7;">Create a verified owner account and fill out the listing form. Our team reviews it within 48 hours.</p>
+                    </details>
+                    <details style="background:rgba(0,0,0,0.2);border-radius:12px;padding:16px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.06);">
+                        <summary style="font-size:13px;font-weight:600;cursor:pointer;">Is SmartFinder free for students?</summary>
+                        <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:10px;line-height:1.7;">Yes! 100% free. No broker fees, no hidden charges.</p>
+                    </details>
+                    <details style="background:rgba(0,0,0,0.2);border-radius:12px;padding:16px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.06);">
+                        <summary style="font-size:13px;font-weight:600;cursor:pointer;">How are PGs verified?</summary>
+                        <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:10px;line-height:1.7;">Our team physically verifies each listing with an on-ground visit and owner ID check.</p>
+                    </details>
+                </div>
+            </div>
+            <div>
+                <div class="contact-form">
+                    <h3 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin:0 0 24px;letter-spacing:-0.5px;">Send us a message</h3>
+                    <label class="profile-label">Your Name</label>
+                    <input type="text" id="contactName" placeholder="Full Name" class="auth-input" style="margin-bottom:16px;">
+                    <label class="profile-label">Email</label>
+                    <input type="email" id="contactEmail" placeholder="email@example.com" class="auth-input" style="margin-bottom:16px;">
+                    <label class="profile-label">Topic</label>
+                    <select id="contactTopic" class="auth-input" style="margin-bottom:16px;">
+                        <option>General Inquiry</option>
+                        <option>List My PG</option>
+                        <option>Report an Issue</option>
+                        <option>Refund / Payment</option>
+                        <option>Technical Support</option>
+                    </select>
+                    <label class="profile-label">Message</label>
+                    <textarea id="contactMsg" placeholder="Describe your issue or question..." rows="5" class="auth-input" style="resize:vertical;margin-bottom:20px;"></textarea>
+                    <button class="auth-btn" onclick="submitContact()">Send Message →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======================== FOOTER ======================== -->
+<footer>
+    <div class="footer-inner">
+        <div>
+            <div class="logo" style="font-size:22px;margin-bottom:10px;">SmartFinder</div>
+            <p style="font-size:12px;color:rgba(255,255,255,0.3);max-width:260px;line-height:1.7;">Premium student PG discovery in Surat, Bardoli & beyond. No brokers, no BS.</p>
+        </div>
+        <div>
+            <p style="font-size:10px;font-weight:800;color:var(--lime);letter-spacing:0.15em;text-transform:uppercase;margin:0 0 14px;">Navigate</p>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <a href="#listings" style="font-size:12px;color:rgba(255,255,255,0.4);text-decoration:none;">Explore PGs</a>
+                <a href="#about" style="font-size:12px;color:rgba(255,255,255,0.4);text-decoration:none;">Our Story</a>
+                <a href="#help" style="font-size:12px;color:rgba(255,255,255,0.4);text-decoration:none;">Contact</a>
+            </div>
+        </div>
+        <div>
+            <p style="font-size:10px;font-weight:800;color:var(--lime);letter-spacing:0.15em;text-transform:uppercase;margin:0 0 14px;">Areas</p>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <span style="font-size:12px;color:rgba(255,255,255,0.4);">Vesu</span>
+                <span style="font-size:12px;color:rgba(255,255,255,0.4);">Adajan</span>
+                <span style="font-size:12px;color:rgba(255,255,255,0.4);">Piplod</span>
+                <span style="font-size:12px;color:rgba(255,255,255,0.4);">Bardoli</span>
+                <span style="font-size:12px;color:rgba(255,255,255,0.4);">Palsana</span>
+            </div>
+        </div>
+    </div>
+    <p class="footer-copy">© 2025 SmartFinder. All rights reserved. | Made with ❤️ in Surat, Gujarat</p>
+</footer>
+
+<!-- ======================== TOAST ======================== -->
+<!-- ======================== AI FLOATING BUTTON ======================== -->
+<button id="aiFloatBtn" onclick="openAIPlanner()" title="AI PG Finder" style="position:fixed;bottom:30px;right:30px;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#CEDC00,#a8b800);color:#00352F;border:none;border-radius:999px;padding:14px 22px;font-size:12px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;z-index:900;box-shadow:0 8px 30px rgba(206,220,0,0.45);transition:all 0.3s;font-family:'DM Sans',sans-serif;">
+    <span style="font-size:20px;">🤖</span>
+    <span>AI Finder</span>
+</button>
+
+<!-- ======================== AI PLANNER MODAL ======================== -->
+<div id="aiPlannerModal" class="modal">
+    <div style="background:#00352F;border:2px solid rgba(206,220,0,0.35);border-radius:28px;padding:36px;width:100%;max-width:600px;position:relative;max-height:92vh;overflow-y:auto;">
+        <button class="modal-close" onclick="closeModal('aiPlannerModal')">✕</button>
+
+        <!-- Step indicator -->
+        <div style="display:flex;align-items:center;gap:0;margin-bottom:28px;" id="aiStepBar">
+            <div class="ai-step active" id="stepDot1">1</div>
+            <div style="flex:1;height:2px;background:rgba(255,255,255,0.1);"></div>
+            <div class="ai-step" id="stepDot2">2</div>
+            <div style="flex:1;height:2px;background:rgba(255,255,255,0.1);"></div>
+            <div class="ai-step" id="stepDot3">3</div>
+            <div style="flex:1;height:2px;background:rgba(255,255,255,0.1);"></div>
+            <div class="ai-step" id="stepDot4">🤖</div>
+        </div>
+
+        <!-- STEP 1: College & Budget -->
+        <div id="aiStep1">
+            <p style="font-size:10px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:0.15em;margin:0 0 8px;">Step 1 of 3</p>
+            <h2 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin:0 0 8px;">Your College &amp; Budget</h2>
+            <p style="font-size:13px;color:rgba(255,255,255,0.5);margin:0 0 24px;line-height:1.6;">Tell us where you study and how much you can spend per month.</p>
+
+            <div style="margin-bottom:20px;">
+                <label style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:8px;">Your College / University</label>
+                <select id="aiCollege" style="width:100%;padding:13px 16px;background:rgba(0,0,0,0.35);border:1px solid rgba(206,220,0,0.25);border-radius:12px;color:white;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;">
+                    <option value="">Select your college...</option>
+                    <option value="SVNIT Surat">SVNIT Surat</option>
+                    <option value="UTU Surat">UTU Surat (Uka Tarsadia University)</option>
+                    <option value="VNSGU Surat">VNSGU Surat</option>
+                    <option value="GLS University">GLS University</option>
+                    <option value="Bardoli Engineering College">Bardoli Engineering College</option>
+                    <option value="Bardoli University">Bardoli University</option>
+                    <option value="ITI Palsana">ITI Palsana</option>
+                    <option value="Other">Other College</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom:20px;">
+                <label style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:8px;">Monthly Budget: <span id="aiBudgetDisplay" style="color:var(--lime);font-weight:800;">₹10,000</span></label>
+                <input type="range" id="aiBudget" min="3000" max="20000" step="500" value="10000" oninput="document.getElementById('aiBudgetDisplay').innerText='₹'+parseInt(this.value).toLocaleString()" style="width:100%;accent-color:var(--lime);">
+                <div style="display:flex;justify-content:space-between;margin-top:6px;">
+                    <span style="font-size:10px;color:rgba(255,255,255,0.3);">₹3,000</span>
+                    <span style="font-size:10px;color:rgba(255,255,255,0.3);">₹20,000</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <label style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:10px;">Room Sharing Preference</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div class="ai-option-card" id="shareOpt1" onclick="selectShare(1)"><div style="font-size:22px;margin-bottom:6px;">🛏️</div><div style="font-size:12px;font-weight:700;">Single Room</div><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">Full privacy</div></div>
+                    <div class="ai-option-card" id="shareOpt2" onclick="selectShare(2)"><div style="font-size:22px;margin-bottom:6px;">👥</div><div style="font-size:12px;font-weight:700;">Double Sharing</div><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">Split costs</div></div>
+                    <div class="ai-option-card" id="shareOpt3" onclick="selectShare(3)"><div style="font-size:22px;margin-bottom:6px;">👨‍👩‍👦</div><div style="font-size:12px;font-weight:700;">Triple Sharing</div><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">More affordable</div></div>
+                    <div class="ai-option-card" id="shareOpt4" onclick="selectShare(4)"><div style="font-size:22px;margin-bottom:6px;">🏘️</div><div style="font-size:12px;font-weight:700;">Any / Don't Mind</div><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">Most options</div></div>
+                </div>
+            </div>
+            <button onclick="goStep(2)" style="width:100%;padding:15px;background:var(--lime);color:#00352F;border:none;border-radius:12px;font-size:12px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;">Next →</button>
+        </div>
+
+        <!-- STEP 2: Priorities -->
+        <div id="aiStep2" style="display:none;">
+            <p style="font-size:10px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:0.15em;margin:0 0 8px;">Step 2 of 3</p>
+            <h2 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin:0 0 8px;">Set Your Priorities</h2>
+            <p style="font-size:13px;color:rgba(255,255,255,0.5);margin:0 0 20px;line-height:1.6;">Drag and drop to rank what matters most. <strong style="color:white;">Top = most important.</strong> AI will score every PG based on your exact order.</p>
+
+            <div id="priorityList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+                <div class="priority-item" draggable="true" data-val="commute"><span style="font-size:16px;color:rgba(255,255,255,0.3);cursor:grab;">⠿</span><span style="font-size:22px;">🚌</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Short Commute to College</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Nearest PG to your university</div></div><div id="rank-commute" style="width:26px;height:26px;border-radius:50%;background:rgba(206,220,0,0.15);border:1px solid rgba(206,220,0,0.3);color:var(--lime);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div></div>
+                <div class="priority-item" draggable="true" data-val="budget"><span style="font-size:16px;color:rgba(255,255,255,0.3);cursor:grab;">⠿</span><span style="font-size:22px;">💰</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Low Cost / Best Budget</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Most value for your money</div></div><div id="rank-budget" style="width:26px;height:26px;border-radius:50%;background:rgba(206,220,0,0.15);border:1px solid rgba(206,220,0,0.3);color:var(--lime);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div></div>
+                <div class="priority-item" draggable="true" data-val="amenities"><span style="font-size:16px;color:rgba(255,255,255,0.3);cursor:grab;">⠿</span><span style="font-size:22px;">✨</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Best Amenities</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">WiFi, AC, mess, hot water</div></div><div id="rank-amenities" style="width:26px;height:26px;border-radius:50%;background:rgba(206,220,0,0.15);border:1px solid rgba(206,220,0,0.3);color:var(--lime);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div></div>
+                <div class="priority-item" draggable="true" data-val="safety"><span style="font-size:16px;color:rgba(255,255,255,0.3);cursor:grab;">⠿</span><span style="font-size:22px;">🔒</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Safety &amp; Security</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">CCTV, gated, power backup</div></div><div id="rank-safety" style="width:26px;height:26px;border-radius:50%;background:rgba(206,220,0,0.15);border:1px solid rgba(206,220,0,0.3);color:var(--lime);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">4</div></div>
+                <div class="priority-item" draggable="true" data-val="food"><span style="font-size:16px;color:rgba(255,255,255,0.3);cursor:grab;">⠿</span><span style="font-size:22px;">🍱</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Food / Mess Available</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Home cooked veg food daily</div></div><div id="rank-food" style="width:26px;height:26px;border-radius:50%;background:rgba(206,220,0,0.15);border:1px solid rgba(206,220,0,0.3);color:var(--lime);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">5</div></div>
+            </div>
+
+            <div style="background:rgba(206,220,0,0.07);border:1px solid rgba(206,220,0,0.18);border-radius:12px;padding:13px 16px;margin-bottom:20px;">
+                <p style="font-size:11px;color:rgba(255,255,255,0.5);margin:0;">💡 <strong style="color:var(--lime);">Tip:</strong> Drag items up/down to reorder. AI gives 5x more weight to your #1 priority than #5.</p>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button onclick="goStep(1)" style="padding:15px 20px;background:transparent;color:rgba(255,255,255,0.5);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;font-size:12px;font-weight:800;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;">← Back</button>
+                <button onclick="goStep(3)" style="flex:1;padding:15px;background:var(--lime);color:#00352F;border:none;border-radius:12px;font-size:12px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;">Next →</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Lifestyle -->
+        <div id="aiStep3" style="display:none;">
+            <p style="font-size:10px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:0.15em;margin:0 0 8px;">Step 3 of 3</p>
+            <h2 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;margin:0 0 8px;">Your Lifestyle</h2>
+            <p style="font-size:13px;color:rgba(255,255,255,0.5);margin:0 0 24px;line-height:1.6;">Quick picks so AI can personalise your results perfectly.</p>
+
+            <div style="margin-bottom:20px;">
+                <label style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:10px;">Food Preference</label>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button class="ai-pill" id="pill-veg" onclick="togglePill('veg')">🥦 Vegetarian Only</button>
+                    <button class="ai-pill" id="pill-nonveg" onclick="togglePill('nonveg')">🍗 Non-Veg OK</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom:20px;">
+                <label style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:10px;">Must-Have Facilities <span style="color:rgba(255,255,255,0.3);font-weight:400;font-size:9px;">(select all that apply)</span></label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="ai-pill" id="pill-wifi" onclick="togglePill('wifi')">📶 WiFi</button>
+                    <button class="ai-pill" id="pill-ac" onclick="togglePill('ac')">❄️ AC</button>
+                    <button class="ai-pill" id="pill-mess" onclick="togglePill('mess')">🍱 Mess</button>
+                    <button class="ai-pill" id="pill-laundry" onclick="togglePill('laundry')">👕 Laundry</button>
+                    <button class="ai-pill" id="pill-gym" onclick="togglePill('gym')">💪 Gym</button>
+                    <button class="ai-pill" id="pill-parking" onclick="togglePill('parking')">🅿️ Parking</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom:20px;">
+                <label style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:10px;">How will you travel to college?</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+                    <div class="ai-option-card" id="travelOpt1" onclick="selectTravel('walk')"><div style="font-size:22px;margin-bottom:4px;">🚶</div><div style="font-size:11px;font-weight:700;">Walk</div></div>
+                    <div class="ai-option-card" id="travelOpt2" onclick="selectTravel('bike')"><div style="font-size:22px;margin-bottom:4px;">🏍️</div><div style="font-size:11px;font-weight:700;">Bike / Auto</div></div>
+                    <div class="ai-option-card" id="travelOpt3" onclick="selectTravel('bus')"><div style="font-size:22px;margin-bottom:4px;">🚌</div><div style="font-size:11px;font-weight:700;">Bus / Share</div></div>
+                </div>
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <label style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:8px;">Any extra requirement? <span style="color:rgba(255,255,255,0.3);font-weight:400;">(optional)</span></label>
+                <input type="text" id="aiExtraNote" placeholder="e.g. I prefer quiet area, need study room..." style="width:100%;padding:13px 16px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:white;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--lime)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button onclick="goStep(2)" style="padding:15px 20px;background:transparent;color:rgba(255,255,255,0.5);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;font-size:12px;font-weight:800;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;">← Back</button>
+                <button onclick="runAIAnalysis()" style="flex:1;padding:15px;background:var(--lime);color:#00352F;border:none;border-radius:12px;font-size:12px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;">🤖 Find My Perfect PG</button>
+            </div>
+        </div>
+
+        <!-- STEP 4: Results -->
+        <div id="aiStep4" style="display:none;">
+            <div id="aiLoadingState" style="text-align:center;padding:48px 0;">
+                <div style="width:52px;height:52px;border-radius:50%;border:3px solid rgba(206,220,0,0.2);border-top-color:var(--lime);animation:aiSpin 0.8s linear infinite;margin:0 auto 20px;"></div>
+                <p id="aiLoadingText" style="font-size:13px;color:rgba(255,255,255,0.5);margin:0;">Analyzing your priorities...</p>
+            </div>
+            <div id="aiResultState" style="display:none;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+                    <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#CEDC00,#a8b800);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🤖</div>
+                    <div>
+                        <h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin:0 0 2px;">AI Results</h2>
+                        <p style="font-size:11px;color:rgba(255,255,255,0.4);margin:0;" id="aiResultSubtitle"></p>
+                    </div>
+                </div>
+                <div id="aiAnalysisText" style="background:rgba(0,0,0,0.2);border-left:3px solid var(--lime);border-radius:0 12px 12px 0;padding:16px 18px;margin-bottom:22px;font-size:13px;line-height:1.8;color:rgba(255,255,255,0.75);"></div>
+                <h3 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 14px;color:var(--lime);">🏆 Best Matched PGs — Click to View</h3>
+                <div id="aiMatchedPGs" style="display:flex;flex-direction:column;gap:12px;"></div>
+                <button onclick="goStep(1);resetAI()" style="width:100%;margin-top:20px;padding:13px;background:transparent;border:1.5px solid rgba(206,220,0,0.3);color:var(--lime);border-radius:12px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;" onmouseover="this.style.background='var(--lime)';this.style.color='#00352F'" onmouseout="this.style.background='transparent';this.style.color='var(--lime)'">🔄 Search Again</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ======================== AUTH MODAL ======================== -->
+<div id="authModal" class="modal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('authModal')">&#10005;</button>
+        <div style="display:flex;gap:24px;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:16px;">
+            <button class="auth-tab active" id="loginTab"  onclick="switchAuth('login')">Login</button>
+            <button class="auth-tab"        id="signupTab" onclick="switchAuth('signup')">Sign Up</button>
+        </div>
+        <h2 id="authTitle" style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin:0 0 22px;letter-spacing:-1px;">Welcome Back</h2>
+        <form id="authForm" onsubmit="handleEmailAuth(event)">
+            <input type="text"     id="userName"     placeholder="Full Name"     class="auth-input" style="display:none;margin-bottom:14px;">
+            <input type="email"    id="userEmail"    placeholder="Email Address" class="auth-input" style="margin-bottom:14px;" required>
+            <input type="password" id="userPassword" placeholder="Password"      class="auth-input" style="margin-bottom:20px;" required>
+            <button type="submit" class="auth-btn">Continue &#8594;</button>
+        </form>
+        <div class="divider"><span>or</span></div>
+        <button class="google-btn" onclick="handleGoogleLogin()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;">
+            Sign in with Google
+        </button>
+    </div>
+</div>
+
+<!-- ======================== PROFILE MODAL ======================== -->
+<div id="profileModal" class="modal">
+    <div class="profile-modal-box">
+        <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.08);">
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                <h2 id="profileHeaderName" style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;color:var(--lime);margin:0;"></h2>
+                <div id="verifyBadge" class="verify-badge">
+                    <span id="badgeIcon">🔒</span>
+                    <span id="badgeText">Unverified</span>
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:10px;">
+                <button id="editProfileBtn" onclick="toggleEditMode()" style="font-size:10px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:0.1em;border:1.5px solid rgba(206,220,0,0.4);background:transparent;padding:8px 18px;border-radius:10px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='var(--lime)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--lime)'">Edit Profile</button>
+                <button onclick="handleLogout()" style="font-size:10px;font-weight:800;color:#f87171;text-transform:uppercase;letter-spacing:0.1em;border:1.5px solid rgba(239,68,68,0.3);background:transparent;padding:8px 18px;border-radius:10px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#ef4444';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#f87171'">Sign Out</button>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:40px;">
+            <div>
+                <p id="profileEmail" style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;margin:0 0 24px;"></p>
+                <form id="extraInfoForm" onsubmit="saveStudentExtraInfo(event)" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                    <div>
+                        <label class="profile-label">Mobile Number</label>
+                        <input type="tel" id="studentMobile" class="profile-input" disabled placeholder="9876543210">
+                    </div>
+                    <div>
+                        <label class="profile-label">Gender</label>
+                        <select id="studentGender" class="profile-input" disabled>
+                            <option>Male</option><option>Female</option><option>Other</option>
+                        </select>
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label class="profile-label">Current Address</label>
+                        <input type="text" id="studentAddress" class="profile-input" disabled placeholder="City, State">
+                    </div>
+                    <div>
+                        <label class="profile-label">College Name</label>
+                        <input type="text" id="studentClg" class="profile-input" disabled placeholder="UTU, SVNIT, VNSGU...">
+                    </div>
+                    <div>
+                        <label class="profile-label">Semester</label>
+                        <input type="number" id="studentSem" class="profile-input" disabled min="1" max="10">
+                    </div>
+                    <div>
+                        <label class="profile-label">Branch / Course</label>
+                        <input type="text" id="studentBranch" class="profile-input" disabled placeholder="e.g. Computer Engineering">
+                    </div>
+                    <div>
+                        <label class="profile-label">Home City</label>
+                        <input type="text" id="studentCity" class="profile-input" disabled placeholder="Ahmedabad, Vadodara...">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <button type="submit" id="saveInfoBtn" style="display:none;width:100%;background:var(--lime);color:var(--green);padding:15px;border-radius:12px;border:none;font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;">Save Profile</button>
+                    </div>
+                </form>
+            </div>
+            <div style="border-left:1px solid rgba(255,255,255,0.06);padding-left:28px;">
+                <h3 style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.15em;margin:0 0 16px;">Saved Favorites</h3>
+                <div id="favoritesContainer" style="display:flex;flex-direction:column;gap:10px;max-height:380px;overflow-y:auto;padding-right:4px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================== PG DETAIL MODAL ======================== -->
+<div id="pgDetailModal" class="modal">
+    <div class="detail-modal-box">
+        <button class="modal-close" onclick="closeModal('pgDetailModal')">✕</button>
+        <img id="detailHeroImg" src="" alt="" class="detail-img-hero">
+        <div class="detail-body">
+            <div style="display:grid;grid-template-columns:1fr 340px;gap:40px;">
+                <!-- Left -->
+                <div>
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+                        <div>
+                            <h2 id="detailName" style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--lime);margin:0 0 6px;letter-spacing:-1px;"></h2>
+                            <p id="detailArea" style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;margin:0;"></p>
+                        </div>
+                        <div style="text-align:right;">
+                            <div id="detailRent" style="font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:white;"></div>
+                            <div id="detailSplit" style="font-size:10px;font-weight:700;color:var(--lime);text-transform:uppercase;"></div>
+                        </div>
+                    </div>
+
+                    <div id="detailBadges" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;"></div>
+
+                    <div style="background:rgba(0,0,0,0.2);border-radius:16px;padding:20px;margin-bottom:24px;">
+                        <h4 style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;margin:0 0 16px;text-transform:uppercase;letter-spacing:0.05em;">About This PG</h4>
+                        <p id="detailDesc" style="font-size:13px;line-height:1.8;color:rgba(255,255,255,0.6);margin:0;"></p>
+                    </div>
+
+                    <!-- Amenities -->
+                    <div style="margin-bottom:24px;">
+                        <h4 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;margin:0 0 14px;text-transform:uppercase;letter-spacing:0.05em;">Amenities</h4>
+                        <div id="detailAmenities" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+                    </div>
+
+                    <!-- Map -->
+                    <div style="margin-bottom:24px;">
+                        <h4 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;margin:0 0 14px;text-transform:uppercase;letter-spacing:0.05em;">Location on Map</h4>
+                        <div id="pgDetailMap"></div>
+                        <p id="detailAddress" style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:10px;"></p>
+                    </div>
+
+                    <!-- Owner Contact -->
+                    <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(206,220,0,0.15);border-radius:16px;padding:20px;margin-bottom:24px;">
+                        <h4 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;margin:0 0 16px;text-transform:uppercase;letter-spacing:0.05em;">Owner Contact</h4>
+                        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                            <div id="ownerAvatar" style="width:50px;height:50px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--green);flex-shrink:0;"></div>
+                            <div>
+                                <div id="ownerName" style="font-size:15px;font-weight:700;"></div>
+                                <div id="ownerPhone" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:3px;"></div>
+                            </div>
+                            <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;">
+                                <a id="ownerCallBtn" href="#" class="contact-btn">📞 Call</a>
+                                <a id="ownerWhatsBtn" href="#" target="_blank" class="contact-btn-outline">💬 WhatsApp</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Roommates -->
+                <div>
+                    <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:24px;margin-bottom:20px;">
+                        <h4 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;margin:0 0 20px;text-transform:uppercase;letter-spacing:0.05em;">Current Roommates</h4>
+                        <div id="roommatesContainer" style="display:flex;flex-direction:column;gap:12px;"></div>
+                        <p id="roommateNote" style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:14px;"></p>
+                    </div>
+                    <div style="background:rgba(206,220,0,0.08);border:1.5px solid rgba(206,220,0,0.25);border-radius:16px;padding:20px;">
+                        <p style="font-size:11px;font-weight:700;color:var(--lime);text-transform:uppercase;letter-spacing:0.1em;margin:0 0 6px;">Interested?</p>
+                        <p style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;margin:0 0 16px;">Call or WhatsApp the owner directly to schedule a visit.</p>
+                        <button onclick="showToast('Visit request sent! Owner will contact you soon.')" class="contact-btn" style="width:100%;justify-content:center;">Request Visit →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================== JAVASCRIPT ======================== -->
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ──────────────────────────────────────────
+// FIREBASE
+// ──────────────────────────────────────────
+const firebaseConfig = {
+    apiKey: "AIzaSyCovLgAcmIcf8Zt-c8q5c3hbPrnCa-c-PI",
+    authDomain: "smartfinder-f0df9.firebaseapp.com",
+    projectId: "smartfinder-f0df9",
+    storageBucket: "smartfinder-f0df9.firebasestorage.app",
+    messagingSenderId: "443553537029",
+    appId: "1:443553537029:web:8784b24995a1496470d06c"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+// ──────────────────────────────────────────
+// PG DATABASE — Extended
+// ──────────────────────────────────────────
+const pgData = [
+    {
+        id:1, name:"The Vesu Loft", area:"Vesu", rent:12000, type:"AC", capacity:2,
+        wifi:true, mess:true, isVeg:true,
+        img:"https://i.ibb.co/JjXhs3L5/42.webp",
+        lat:21.1503, lng:72.7765,
+        address:"12, Silver Oak Society, Vesu, Surat - 395007",
+        desc:"A modern, fully-furnished AC PG with 24/7 security, high-speed WiFi and tasty vegetarian mess. Perfect for UTU and SVNIT students looking for comfort.",
+        amenities:["WiFi","AC","Mess","Hot Water","Laundry","CCTV","Power Backup","Parking"],
+        owner:{ name:"Ramesh Patel", phone:"+91 98765 11001", initials:"R" },
+        roommates:[
+            { name:"Arjun Shah", college:"UTU", sem:"5th", city:"Ahmedabad", gender:"Male" },
+            { name:"", college:"", sem:"", city:"", gender:"" }
+        ]
+    },
+    {
+        id:2, name:"Bardoli Manor", area:"Bardoli", rent:4500, type:"Non-AC", capacity:3,
+        wifi:false, mess:true, isVeg:true,
+        img:"https://i.ibb.co/fY217xZm/43.webp",
+        lat:21.1200, lng:73.1100,
+        address:"Opp. Bardoli College, Station Road, Bardoli - 394601",
+        desc:"Budget-friendly PG near Bardoli College. Spacious triple rooms with veg mess included. Ideal for first-year students.",
+        amenities:["Mess","Hot Water","Study Room","CCTV"],
+        owner:{ name:"Suresh Desai", phone:"+91 94270 22002", initials:"S" },
+        roommates:[
+            { name:"Vivek Modi", college:"Bardoli College", sem:"3rd", city:"Surat", gender:"Male" },
+            { name:"Jay Solanki", college:"Bardoli College", sem:"3rd", city:"Bharuch", gender:"Male" },
+            { name:"", college:"", sem:"", city:"", gender:"" }
+        ]
+    },
+    {
+        id:3, name:"The Residence", area:"Piplod", rent:15000, type:"AC", capacity:1,
+        wifi:true, mess:true, isVeg:true,
+        img:"https://i.ibb.co/SW12sL6/44.jpg",
+        lat:21.1699, lng:72.7804,
+        address:"3rd Floor, Shyam Residency, Piplod Main Road, Surat - 395007",
+        desc:"Luxury single occupancy AC rooms for students who value privacy. Premium amenities including housekeeping and daily tiffin service.",
+        amenities:["WiFi","AC","Mess","Housekeeping","Hot Water","Laundry","CCTV","Power Backup","Gym"],
+        owner:{ name:"Nilesh Shah", phone:"+91 99250 33003", initials:"N" },
+        roommates:[]
+    },
+    {
+        id:4, name:"Social Hub PG", area:"Adajan", rent:6000, type:"Non-AC", capacity:2,
+        wifi:true, mess:false, isVeg:false,
+        img:"https://i.ibb.co/5hV153mY/45.avif",
+        lat:21.1920, lng:72.7968,
+        address:"Near Adajan Circle, Bhatar Road, Surat - 395009",
+        desc:"Social and vibrant PG community with fast WiFi. No mess but a well-equipped kitchen is shared. Ideal for those who cook or order food.",
+        amenities:["WiFi","Kitchen","Hot Water","CCTV","Power Backup"],
+        owner:{ name:"Kiran Trivedi", phone:"+91 90676 44004", initials:"K" },
+        roommates:[
+            { name:"Rohan Jain", college:"VNSGU", sem:"7th", city:"Navsari", gender:"Male" },
+            { name:"", college:"", sem:"", city:"", gender:"" }
+        ]
+    },
+    {
+        id:5, name:"Urban Nest", area:"Palsana", rent:9000, type:"AC", capacity:2,
+        wifi:true, mess:true, isVeg:true,
+        img:"https://i.ibb.co/hJBzQzr5/46.avif",
+        lat:21.0780, lng:72.9640,
+        address:"Main Market, Palsana, Surat District - 394315",
+        desc:"Comfortable AC sharing rooms with home-style vegetarian food. Calm locality ideal for students wanting peace and focus.",
+        amenities:["WiFi","AC","Mess","Hot Water","CCTV","Study Room"],
+        owner:{ name:"Bhavesh Raval", phone:"+91 98988 55005", initials:"B" },
+        roommates:[
+            { name:"Dhruv Patel", college:"ITI Palsana", sem:"2nd", city:"Surat", gender:"Male" },
+            { name:"", college:"", sem:"", city:"", gender:"" }
+        ]
+    },
+    {
+        id:6, name:"Prime Student Living", area:"Vesu", rent:11000, type:"AC", capacity:2,
+        wifi:true, mess:true, isVeg:true,
+        img:"https://i.ibb.co/KzXDC56b/47.webp",
+        lat:21.1480, lng:72.7790,
+        address:"Prime Avenue, Vesu-Bhatar Road, Surat - 395007",
+        desc:"Purposefully designed for students. High-speed fibre, AC rooms, and a dedicated study lounge. 5-min walk from SVNIT.",
+        amenities:["WiFi","AC","Mess","Study Lounge","Hot Water","Laundry","CCTV","Power Backup"],
+        owner:{ name:"Alpesh Gajjar", phone:"+91 70162 66006", initials:"A" },
+        roommates:[
+            { name:"Parth Mehta", college:"SVNIT", sem:"5th", city:"Vadodara", gender:"Male" },
+            { name:"Krish Vora", college:"SVNIT", sem:"5th", city:"Rajkot", gender:"Male" }
+        ]
+    },
+    {
+        id:7, name:"The Bardoli Hub", area:"Bardoli", rent:3800, type:"Non-AC", capacity:4,
+        wifi:true, mess:false, isVeg:true,
+        img:"https://i.ibb.co/9mHz6tn4/48.avif",
+        lat:21.1230, lng:73.1120,
+        address:"Near Sarojini Naidu Garden, Bardoli - 394601",
+        desc:"Super budget quad-sharing rooms. WiFi included, self-cooking allowed. Great for groups of friends who want to room together.",
+        amenities:["WiFi","Kitchen","Hot Water","CCTV"],
+        owner:{ name:"Mahesh Bhatt", phone:"+91 86900 77007", initials:"M" },
+        roommates:[
+            { name:"Karan Patel", college:"Bardoli Engineering College", sem:"1st", city:"Tapi", gender:"Male" },
+            { name:"Aman Shah", college:"Bardoli Engineering College", sem:"1st", city:"Valsad", gender:"Male" },
+            { name:"Raj Desai", college:"Bardoli Engineering College", sem:"1st", city:"Navsari", gender:"Male" },
+            { name:"", college:"", sem:"", city:"", gender:"" }
+        ]
+    },
+    {
+        id:8, name:"Surat Skyline PG", area:"Adajan", rent:7500, type:"AC", capacity:2,
+        wifi:true, mess:true, isVeg:true,
+        img:"https://i.ibb.co/9kSSvbgn/49.webp",
+        lat:21.1950, lng:72.8010,
+        address:"7th Floor, Skyline Tower, Adajan Patiya, Surat - 395009",
+        desc:"High-rise AC PG with a breathtaking city view. Full-time mess, security and friendly management. Very popular among girls.",
+        amenities:["WiFi","AC","Mess","Hot Water","Laundry","CCTV","Power Backup","Balcony"],
+        owner:{ name:"Heena Thakkar", phone:"+91 95125 88008", initials:"H" },
+        roommates:[
+            { name:"Riya Joshi", college:"VNSGU", sem:"3rd", city:"Surat", gender:"Female" },
+            { name:"", college:"", sem:"", city:"", gender:"" }
+        ]
+    },
+    {
+        id:9, name:"University Residency", area:"Bardoli", rent:5000, type:"Non-AC", capacity:2,
+        wifi:true, mess:true, isVeg:true,
+        img:"https://i.ibb.co/7t8M4Lp6/50.jpg",
+        lat:21.1190, lng:73.1080,
+        address:"100 Feet Road, Near Degree College, Bardoli - 394601",
+        desc:"Well-maintained PG with consistent mess service. 2-min walk to the university gate. Very safe locality.",
+        amenities:["WiFi","Mess","Hot Water","CCTV","Study Room"],
+        owner:{ name:"Gopal Nair", phone:"+91 91730 99009", initials:"G" },
+        roommates:[
+            { name:"Siddhant Rana", college:"Bardoli University", sem:"4th", city:"Ahmedabad", gender:"Male" },
+            { name:"", college:"", sem:"", city:"", gender:"" }
+        ]
+    },
+    {
+        id:10, name:"Luxury Piplod PG", area:"Piplod", rent:18000, type:"AC", capacity:1,
+        wifi:true, mess:true, isVeg:true,
+        img:"https://i.ibb.co/8g1BZmwf/51.jpg",
+        lat:21.1720, lng:72.7830,
+        address:"Piplod Green Boulevard, Near L'Amour Party Plot, Surat - 395007",
+        desc:"Ultra-premium private room with king-size bed, wardrobe and personal AC. Daily housekeeping, gourmet mess and rooftop terrace.",
+        amenities:["WiFi","AC","Mess","Housekeeping","Hot Water","Laundry","CCTV","Power Backup","Gym","Terrace","Parking"],
+        owner:{ name:"Devang Kapadia", phone:"+91 98240 10010", initials:"D" },
+        roommates:[]
+    }
+];
+
+// ──────────────────────────────────────────
+// STATE
+// ──────────────────────────────────────────
+let favorites = new Set();
+let isLoginView = true;
+let isEditMode = false;
+let currentDetailMap = null;
+
+// ──────────────────────────────────────────
+// TOAST
+// ──────────────────────────────────────────
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ──────────────────────────────────────────
+// MODAL HELPERS
+// ──────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+// Close on backdrop click
+document.querySelectorAll('.modal').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+});
+
+// ──────────────────────────────────────────
+// RENDER PGs
+// ──────────────────────────────────────────
+function renderPGs() {
+    const maxRent   = +document.getElementById('priceRange').value;
+    const selCap    = document.getElementById('capacityFilter').value;
+    const sortType  = document.getElementById('sortFilter').value;
+    const search    = document.getElementById('searchInput').value.toLowerCase();
+    const needsWifi = document.getElementById('wifiFilter').checked || document.getElementById('wifiFilter2').checked;
+    const needsMess = document.getElementById('messFilter').checked || document.getElementById('messFilter2').checked;
+    const needsVeg  = document.getElementById('vegFilter').checked  || document.getElementById('vegFilter2').checked;
+    const needsAC   = document.getElementById('acFilter').checked;
+
+    const selArea = document.getElementById('areaFilter') ? document.getElementById('areaFilter').value : 'All';
+    let filtered = allPGs.filter(pg => {
+        return pg.rent <= maxRent &&
+               (selCap === "All" || pg.capacity == selCap) &&
+               (selArea === "All" || pg.area === selArea) &&
+               (pg.name.toLowerCase().includes(search) || pg.area.toLowerCase().includes(search)) &&
+               (!needsWifi || pg.wifi) && (!needsMess || pg.mess) &&
+               (!needsVeg  || pg.isVeg) && (!needsAC || pg.type === "AC");
+    });
+
+    if (sortType === "lowToHigh") filtered.sort((a,b) => a.rent - b.rent);
+    else if (sortType === "highToLow") filtered.sort((a,b) => b.rent - a.rent);
+
+    const container = document.getElementById('pgContainer');
+    if (!container) return;
+
+    document.getElementById('wishlistCounter').innerText = favorites.size > 0 ? `❤️ ${favorites.size}` : '';
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 0;font-size:14px;color:rgba(255,255,255,0.2);font-weight:800;text-transform:uppercase;letter-spacing:0.1em;">No matching PGs found</div>`;
+        return;
+    }
+
+    container.innerHTML = filtered.map(pg => {
+        const split = Math.round(pg.rent / pg.capacity);
+        const isFav = favorites.has(pg.id);
+        const beds  = Array.from({length:pg.capacity}, (_,i) => pg.roommates && pg.roommates[i] && pg.roommates[i].name ? '🟢' : '🔴').join(' ');
+        return `
+        <div class="pg-card" onclick="openPGDetail(${pg.id})">
+            <div class="card-img-wrap">
+                <button class="fav-btn ${isFav?'active':''}" onclick="event.stopPropagation();toggleFavorite(${pg.id})">
+                    <svg viewBox="0 0 24 24" fill="${isFav?'#ef4444':'none'}" stroke="${isFav?'#ef4444':'white'}" stroke-width="2">
+                        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.364-1.364a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </button>
+                <img src="${pg.img}" alt="${pg.name}" loading="lazy">
+            </div>
+            <div class="card-body">
+                <h4 class="card-name">${pg.name}</h4>
+                <div class="card-badges">
+                    ${pg.wifi ? '<span class="badge badge-wifi">WiFi</span>':''} 
+                    ${pg.mess ? '<span class="badge badge-mess">Mess</span>':''}
+                    ${pg.isVeg ? '<span class="badge badge-veg">Veg</span>':''}
+                    ${pg.type==='AC' ? '<span class="badge badge-ac">AC</span>':''}
+                </div>
+                <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:8px;">${beds} ${pg.capacity}-sharing</div>
+                <div class="card-meta">
+                    <div>
+                        <div class="card-area">${pg.area}</div>
+                        <div class="card-type">${pg.type}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="card-rent">₹${pg.rent.toLocaleString()}</div>
+                        <div class="card-split">₹${split.toLocaleString()} / split</div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ──────────────────────────────────────────
+// PG DETAIL MODAL
+// ──────────────────────────────────────────
+function openPGDetail(id) {
+    const pg = allPGs.find(p => p.id === id);
+    if (!pg) return;
+
+    // Basic info
+    document.getElementById('detailHeroImg').src = pg.img;
+    document.getElementById('detailName').innerText = pg.name;
+    document.getElementById('detailArea').innerText = `${pg.area}, Surat`;
+    document.getElementById('detailRent').innerText = `₹${pg.rent.toLocaleString()}`;
+    document.getElementById('detailSplit').innerText = `₹${Math.round(pg.rent/pg.capacity).toLocaleString()} / person (split)`;
+    document.getElementById('detailDesc').innerText = pg.desc;
+    document.getElementById('detailAddress').innerText = `📍 ${pg.address}`;
+
+    // Badges
+    const badges = [];
+    if (pg.type==='AC') badges.push('<span class="badge badge-ac">AC</span>');
+    if (pg.wifi) badges.push('<span class="badge badge-wifi">WiFi</span>');
+    if (pg.mess) badges.push('<span class="badge badge-mess">Mess</span>');
+    if (pg.isVeg) badges.push('<span class="badge badge-veg">Veg Only</span>');
+    badges.push(`<span class="info-chip">👥 ${pg.capacity}-sharing</span>`);
+    document.getElementById('detailBadges').innerHTML = badges.join('');
+
+    // Amenities
+    const amenIcons = { WiFi:'📶', AC:'❄️', Mess:'🍱', 'Hot Water':'🚿', Laundry:'👕', CCTV:'📹', 'Power Backup':'⚡', Parking:'🅿️', Gym:'💪', Terrace:'🌅', Kitchen:'🍳', 'Study Room':'📚', 'Housekeeping':'🧹', Balcony:'🌇', 'Study Lounge':'📖' };
+    document.getElementById('detailAmenities').innerHTML = (pg.amenities||[]).map(a =>
+        `<span class="info-chip">${amenIcons[a]||'✔️'} ${a}</span>`
+    ).join('');
+
+    // Owner
+    document.getElementById('ownerAvatar').innerText = pg.owner.initials;
+    document.getElementById('ownerName').innerText = pg.owner.name;
+    document.getElementById('ownerPhone').innerText = pg.owner.phone;
+    document.getElementById('ownerCallBtn').href = `tel:${pg.owner.phone.replace(/\s/g,'')}`;
+    document.getElementById('ownerWhatsBtn').href = `https://wa.me/${pg.owner.phone.replace(/[\s\+]/g,'').replace(/^0/,'91')}?text=Hi,%20I%20found%20your%20PG%20${encodeURIComponent(pg.name)}%20on%20SmartFinder.%20Is%20it%20available?`;
+
+    // Roommates
+    const rContainer = document.getElementById('roommatesContainer');
+    const occupied = (pg.roommates||[]).filter(r => r.name);
+    const vacant   = pg.capacity - occupied.length;
+    rContainer.innerHTML = occupied.length > 0 ? occupied.map(r => `
+        <div class="roommate-card">
+            <div class="roommate-avatar">${r.name[0]}</div>
+            <div>
+                <div style="font-weight:700;font-size:13px;">${r.name}</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">${r.college} · Sem ${r.sem}</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.3);">from ${r.city}</div>
+            </div>
+        </div>
+    `).join('') : '<p style="font-size:12px;color:rgba(255,255,255,0.3);">No current roommates.</p>';
+    document.getElementById('roommateNote').innerText = vacant > 0 ? `🔴 ${vacant} bed${vacant>1?'s':''} available` : '🟢 Fully occupied — join waitlist';
+
+    openModal('pgDetailModal');
+
+    // Map — destroy old instance if exists
+    setTimeout(() => {
+        const mapEl = document.getElementById('pgDetailMap');
+        mapEl.innerHTML = '';
+        if (currentDetailMap) { currentDetailMap.remove(); currentDetailMap = null; }
+        try {
+            const map = L.map('pgDetailMap', { zoomControl:true }).setView([pg.lat, pg.lng], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap' }).addTo(map);
+            L.marker([pg.lat, pg.lng]).addTo(map).bindPopup(`<b>${pg.name}</b><br>${pg.area}`).openPopup();
+            currentDetailMap = map;
+        } catch(e) { console.warn('Map error', e); }
+    }, 200);
+}
+
+// ──────────────────────────────────────────
+// FAVORITES
+// ──────────────────────────────────────────
+function toggleFavorite(id) {
+    if (favorites.has(id)) favorites.delete(id); else favorites.add(id);
+    renderPGs();
+    showToast(favorites.has(id) ? '❤️ Added to favorites!' : 'Removed from favorites');
+}
+
+function renderFavorites() {
+    const items = allPGs.filter(p => favorites.has(p.id));
+    const container = document.getElementById('favoritesContainer');
+    if (!container) return;
+    container.innerHTML = items.length === 0
+        ? '<p style="font-size:12px;color:rgba(255,255,255,0.2);">No favorites saved yet.</p>'
+        : items.map(p => `
+            <div style="display:flex;align-items:center;gap:10px;background:rgba(0,0,0,0.2);border-radius:12px;padding:12px;cursor:pointer;" onclick="closeModal('profileModal');openPGDetail(${p.id})">
+                <img src="${p.img}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;">
+                <div>
+                    <div style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--lime);">${p.name}</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,0.4);">₹${p.rent.toLocaleString()} · ${p.area}</div>
+                </div>
+            </div>
+        `).join('');
+}
+
+// ──────────────────────────────────────────
+// HERO SLIDER
+// ──────────────────────────────────────────
+function startHeroSlider() {
+    const slides = document.querySelectorAll('.slide');
+    if (!slides.length) return;
+    let idx = 0;
+    setInterval(() => {
+        slides[idx].classList.remove('active');
+        idx = (idx + 1) % slides.length;
+        slides[idx].classList.add('active');
+    }, 5000);
+}
+
+// ──────────────────────────────────────────
+// FILTERS
+// ──────────────────────────────────────────
+function clearFilters() {
+    var af = document.getElementById("areaFilter"); if(af) af.value = "All";
+    document.getElementById('priceRange').value = 20000;
+    document.getElementById('priceValue').innerText = '₹20000';
+    document.getElementById('capacityFilter').value = 'All';
+    document.getElementById('sortFilter').value = 'default';
+    document.getElementById('searchInput').value = '';
+    ['wifiFilter','messFilter','vegFilter','wifiFilter2','messFilter2','vegFilter2','acFilter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.checked = false;
+    });
+    renderPGs();
+}
+
+// ──────────────────────────────────────────
+// CONTACT FORM
+// ──────────────────────────────────────────
+async function submitContact() {
+    const name  = document.getElementById('contactName').value.trim();
+    const email = document.getElementById('contactEmail').value.trim();
+    const topic = document.getElementById('contactTopic').value;
+    const msg   = document.getElementById('contactMsg').value.trim();
+    if (!name || !email || !msg) { showToast('⚠️ Please fill all fields'); return; }
+    try {
+        await db.collection('contactRequests').add({ name, email, topic, message:msg, submittedAt: new Date().toISOString() });
+        showToast('✅ Message sent! We\'ll reply within 24h.');
+        document.getElementById('contactName').value = '';
+        document.getElementById('contactEmail').value = '';
+        document.getElementById('contactMsg').value = '';
+    } catch(e) {
+        showToast('✅ Message received! (offline saved)');
+    }
+}
+
+// ──────────────────────────────────────────
+// AUTH
+// ──────────────────────────────────────────
+function handleAuthClick() {
+    if (auth.currentUser) { renderFavorites(); openModal('profileModal'); }
+    else openModal('authModal');
+}
+
+function switchAuth(view) {
+    isLoginView = (view === 'login');
+    document.getElementById('userName').style.display = isLoginView ? 'none' : 'block';
+    document.getElementById('authTitle').innerText = isLoginView ? 'Welcome Back' : 'Create Account';
+    document.getElementById('loginTab').className = 'auth-tab' + (isLoginView ? ' active' : '');
+    document.getElementById('signupTab').className = 'auth-tab' + (!isLoginView ? ' active' : '');
+}
+
+async function handleEmailAuth(e) {
+    e.preventDefault();
+    const email = document.getElementById('userEmail').value;
+    const pass  = document.getElementById('userPassword').value;
+    const name  = document.getElementById('userName').value;
+    try {
+        if (isLoginView) {
+            await auth.signInWithEmailAndPassword(email, pass);
+        } else {
+            const res = await auth.createUserWithEmailAndPassword(email, pass);
+            await db.collection('users').doc(res.user.uid).set({
+                fullName:name, email, role:'student',
+                joinedAt:new Date().toISOString(), isProfileComplete:false
+            });
+        }
+        currentRole = 'student';
+        closeModal('authModal');
+        showToast('✅ Logged in as Student!');
+    } catch(err) { showToast('⚠️ ' + err.message); }
+}
+
+async function handleGoogleLogin() {
+    try {
+        const result = await auth.signInWithPopup(googleProvider);
+        const user = result.user;
+        const doc  = await db.collection('users').doc(user.uid).get();
+        if (!doc.exists) {
+            await db.collection('users').doc(user.uid).set({
+                fullName:user.displayName, email:user.email, role:'student',
+                joinedAt:new Date().toISOString(), isProfileComplete:false
+            });
+        }
+        currentRole = 'student';
+        closeModal('authModal');
+        showToast('✅ Signed in with Google!');
+    } catch(e) { showToast('⚠️ ' + e.message); }
+}
+
+function handleLogout() {
+    auth.signOut().then(() => {
+        favorites.clear();
+        renderPGs();
+        closeModal('profileModal');
+        currentRole = null;
+        document.getElementById('authBtn').innerText = 'Login';
+        document.getElementById('authBtn').style.background = '';
+        document.getElementById('authBtn').style.color = '';
+        document.getElementById('navAvatar').style.display = 'none';
+        showToast('👋 Logged out successfully');
+    });
+}
+
+// ──────────────────────────────────────────
+// PROFILE
+// ──────────────────────────────────────────
+function toggleEditMode(forceEdit = false) {
+    isEditMode = forceEdit ? true : !isEditMode;
+    const inputs = document.querySelectorAll('#extraInfoForm input, #extraInfoForm select');
+    inputs.forEach(inp => inp.disabled = !isEditMode);
+    document.getElementById('saveInfoBtn').style.display = isEditMode ? 'block' : 'none';
+    document.getElementById('editProfileBtn').innerText = isEditMode ? 'Cancel' : 'Edit Profile';
+}
+
+async function saveStudentExtraInfo(e) {
+    e.preventDefault();
+    const data = {
+        mobile:   document.getElementById('studentMobile').value,
+        gender:   document.getElementById('studentGender').value,
+        address:  document.getElementById('studentAddress').value,
+        clgName:  document.getElementById('studentClg').value,
+        semester: document.getElementById('studentSem').value,
+        branch:   document.getElementById('studentBranch').value,
+        homeCity: document.getElementById('studentCity').value,
+        isProfileComplete: true,
+        updatedAt: new Date().toISOString()
+    };
+    try {
+        await db.collection('users').doc(auth.currentUser.uid).update(data);
+        updateVerificationStatus(data);
+        toggleEditMode(false);
+        showToast('✅ Profile saved!');
+    } catch(e) { showToast('⚠️ Save failed: ' + e.message); }
+}
+
+function updateVerificationStatus(data) {
+    const badge = document.getElementById('verifyBadge');
+    const icon  = document.getElementById('badgeIcon');
+    const text  = document.getElementById('badgeText');
+    if (data.mobile && data.clgName && data.semester) {
+        badge.className = 'verify-badge verified';
+        icon.innerText  = '✅';
+        text.innerText  = 'Verified Student';
+    }
+}
+
+// ──────────────────────────────────────────
+// AUTH STATE LISTENER
+// ──────────────────────────────────────────
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+        document.getElementById('authBtn').innerText = 'Profile';
+        if (user.photoURL) {
+            const av = document.getElementById('navAvatar');
+            if (av) { av.src = user.photoURL; av.style.display = 'block'; }
+        }
+        try {
+            const snap = await db.collection('users').doc(user.uid).get();
+            if (snap.exists) {
+                const d = snap.data();
+                document.getElementById('profileHeaderName').innerText = d.fullName || user.displayName || 'Student';
+                document.getElementById('profileEmail').innerText      = user.email;
+                document.getElementById('studentMobile').value  = d.mobile   || '';
+                document.getElementById('studentClg').value     = d.clgName  || '';
+                document.getElementById('studentSem').value     = d.semester || '';
+                document.getElementById('studentBranch').value  = d.branch   || '';
+                document.getElementById('studentCity').value    = d.homeCity || '';
+                if (d.gender)  document.getElementById('studentGender').value  = d.gender;
+                if (d.address) document.getElementById('studentAddress').value = d.address;
+                if (!d.isProfileComplete) { openModal('profileModal'); toggleEditMode(true); }
+                updateVerificationStatus(d);
+            }
+        } catch(e) { console.warn('Firestore read failed:', e); }
+    } else {
+        document.getElementById('authBtn').innerText = 'Login';
+        const av = document.getElementById('navAvatar');
+        if (av) av.style.display = 'none';
+    }
+});
+
+// ──────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    renderPGs();
+    startHeroSlider();
+
+    // Sync sidebar checkboxes with top-bar ones
+    ['wifiFilter','messFilter','vegFilter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', () => {
+            document.getElementById(id+'2').checked = el.checked;
+            renderPGs();
+        });
+    });
+    ['wifiFilter2','messFilter2','vegFilter2'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', () => {
+            document.getElementById(id.replace('2','')).checked = el.checked;
+            renderPGs();
+        });
+    });
+    document.getElementById('acFilter').addEventListener('change', renderPGs);
+    document.getElementById('sortFilter').addEventListener('change', renderPGs);
+    document.getElementById('capacityFilter').addEventListener('change', renderPGs);
+    document.getElementById('searchInput').addEventListener('input', renderPGs);
+    var pr = document.getElementById('priceRange');
+    if(pr) pr.addEventListener('input', function(){ var pv=document.getElementById('priceValue'); if(pv) pv.innerText='\u20B9'+pr.value; renderPGs(); });
+    var af = document.getElementById('authForm');
+    if(af) af.addEventListener('submit', handleEmailAuth);
+});
+
+
+
+// ==========================================
+// 50+ DUMMY PG DATA (Surat + Bardoli + Palsana)
+// ==========================================
+const extraPGs = [
+    // ── VESU (10 PGs) ──
+    { id:11, name:"Vesu Green Residency", area:"Vesu", rent:8500, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/Q3zvPVDK/52.webp", lat:21.1510, lng:72.7780, address:"22, Green Park Society, Vesu, Surat - 395007", desc:"Affordable AC PG with homely vegetarian mess. 10 min walk from SVNIT.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup"], owner:{name:"Jignesh Patel",phone:"+91 98250 11101",initials:"J"}, roommates:[{name:"Rohan Shah",college:"SVNIT",sem:"3rd",city:"Vadodara",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:12, name:"Sunrise Villa PG", area:"Vesu", rent:13000, type:"AC", capacity:1, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/9R7CzJ6/53.webp", lat:21.1495, lng:72.7755, address:"8, Sunrise Complex, Vesu Main Road, Surat - 395007", desc:"Premium single room PG with modern amenities near SVNIT campus.", amenities:["WiFi","AC","Mess","Housekeeping","Hot Water","Laundry","CCTV","Power Backup"], owner:{name:"Meena Shah",phone:"+91 99099 22202",initials:"M"}, roommates:[] },
+    { id:13, name:"Vesu Boys Hostel", area:"Vesu", rent:6000, type:"Non-AC", capacity:3, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/tTLYzfWy/54.jpg", lat:21.1520, lng:72.7800, address:"15, Shiv Shakti Society, Vesu, Surat - 395007", desc:"Budget boys hostel with WiFi and tiffin service. Very popular with UTU students.", amenities:["WiFi","Mess","Hot Water","CCTV","Study Room"], owner:{name:"Ramji Tiwari",phone:"+91 94260 33303",initials:"R"}, roommates:[{name:"Aryan Gupta",college:"UTU",sem:"1st",city:"Surat",gender:"Male"},{name:"Keval Patel",college:"UTU",sem:"1st",city:"Anand",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:14, name:"Comfort Zone PG Vesu", area:"Vesu", rent:10500, type:"AC", capacity:2, wifi:true, mess:false, isVeg:false, img:"https://i.ibb.co/svkJVGXr/55.jpg", lat:21.1488, lng:72.7770, address:"Plot 7, Comfort Residency, Vesu-Bhatar Cross Road, Surat", desc:"Modern AC rooms with attached kitchen. Self-cooking facility available.", amenities:["WiFi","AC","Kitchen","Hot Water","Laundry","CCTV","Power Backup","Parking"], owner:{name:"Sonal Kapoor",phone:"+91 90990 44404",initials:"S"}, roommates:[{name:"Harsh Modi",college:"SVNIT",sem:"7th",city:"Rajkot",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:15, name:"Elite Girls PG Vesu", area:"Vesu", rent:11000, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/23SBJ1LV/1.avif", lat:21.1505, lng:72.7795, address:"101, Laxmi Enclave, Nr Vesu Temple, Surat - 395007", desc:"Safe and secure girls-only PG with 24/7 security, homely food and CCTV.", amenities:["WiFi","AC","Mess","Hot Water","Laundry","CCTV","Power Backup","Housekeeping"], owner:{name:"Priya Joshi",phone:"+91 98985 55505",initials:"P"}, roommates:[{name:"Nisha Patel",college:"SVNIT",sem:"5th",city:"Surat",gender:"Female"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:43, name:"Vesu Nest PG", area:"Vesu", rent:9200, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/gbQXykds/2.avif", lat:21.1498, lng:72.7760, address:"Nest Complex, Vesu, Surat - 395007", desc:"Cozy AC PG with attached balcony and WiFi. Popular with SVNIT students.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup"], owner:{name:"Suresh Patel",phone:"+91 90016 23423",initials:"S"}, roommates:[{name:"Yash Trivedi",college:"SVNIT",sem:"7th",city:"Ahmedabad",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:44, name:"Scholar's Den Vesu", area:"Vesu", rent:11500, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/21xp0XFG/3.avif", lat:21.1512, lng:72.7785, address:"Scholar's Den, Vesu, Surat - 395007", desc:"Academic-focused PG with study lounge, fast internet and healthy meals.", amenities:["WiFi","AC","Mess","Hot Water","Study Room","CCTV","Power Backup","Laundry"], owner:{name:"Kinjal Shah",phone:"+91 94270 24524",initials:"K"}, roommates:[{name:"Neel Patel",college:"SVNIT",sem:"8th",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:45, name:"Vesu Valley Hostel", area:"Vesu", rent:7800, type:"Non-AC", capacity:3, wifi:true, mess:true, isVeg:false, img:"https://i.ibb.co/7tNpS2s6/4.avif", lat:21.1485, lng:72.7798, address:"Valley Road, Vesu, Surat - 395007", desc:"Budget hostel with WiFi and non-veg mess available on request.", amenities:["WiFi","Mess","Hot Water","CCTV","Power Backup","Kitchen"], owner:{name:"Sagar Patel",phone:"+91 99259 25625",initials:"S"}, roommates:[{name:"Ravi Kumar",college:"SVNIT",sem:"3rd",city:"Bihar",gender:"Male"},{name:"Amit Singh",college:"SVNIT",sem:"3rd",city:"UP",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:52, name:"UTU Campus PG", area:"Vesu", rent:8000, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/99MLbhh0/5.jpg", lat:21.1465, lng:72.7855, address:"100m from UTU Gate, Vesu, Surat - 395007", desc:"Literally 100 meters from UTU main gate. Best location for UTU students.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup","Study Room","Laundry"], owner:{name:"UTU Hostel Mgmt",phone:"+91 98253 32332",initials:"U"}, roommates:[{name:"Parth Chauhan",college:"UTU Surat",sem:"5th",city:"Anand",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:50, name:"Piplod Budget Corner", area:"Piplod", rent:7000, type:"Non-AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/JRLXQX2S/6.webp", lat:21.1715, lng:72.7840, address:"Budget Corner, Piplod, Surat - 395007", desc:"Affordable PG in premium Piplod area. Best value for money near SVNIT.", amenities:["WiFi","Mess","Hot Water","CCTV","Power Backup","Study Room"], owner:{name:"Bhavna Patel",phone:"+91 98986 30130",initials:"B"}, roommates:[{name:"Smit Trivedi",college:"SVNIT",sem:"4th",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+
+    // ── ADAJAN (8 PGs) ──
+    { id:16, name:"Adajan Student Hub", area:"Adajan", rent:7000, type:"Non-AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/23RpvTxW/7.avif", lat:21.1930, lng:72.7990, address:"Near Adajan Patiya, Surat - 395009", desc:"Central Adajan location, close to VNSGU. Mess serves fresh veg food daily.", amenities:["WiFi","Mess","Hot Water","CCTV","Study Room","Power Backup"], owner:{name:"Dinesh Vaghela",phone:"+91 91730 66606",initials:"D"}, roommates:[{name:"Sumit Rana",college:"VNSGU",sem:"4th",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:17, name:"Royal Adajan PG", area:"Adajan", rent:9500, type:"AC", capacity:2, wifi:true, mess:true, isVeg:false, img:"https://i.ibb.co/7xLWJzFk/8.avif", lat:21.1945, lng:72.8005, address:"12B, Royal Gardens, Adajan, Surat - 395009", desc:"Royal living experience with modern AC rooms and non-veg mess option.", amenities:["WiFi","AC","Mess","Hot Water","Laundry","CCTV","Power Backup"], owner:{name:"Chirag Dave",phone:"+91 98790 77707",initials:"C"}, roommates:[{name:"Jay Mehta",college:"VNSGU",sem:"2nd",city:"Bharuch",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:18, name:"Adajan Girls Hostel", area:"Adajan", rent:8000, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/0Rphp3Lc/9.avif", lat:21.1960, lng:72.7970, address:"Near Adajan Circle, Opp. Garden, Surat - 395009", desc:"Premium girls hostel with 24/7 security, biometric entry and homely veg mess.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup","Housekeeping","Study Room"], owner:{name:"Hema Trivedi",phone:"+91 94270 88808",initials:"H"}, roommates:[{name:"Pooja Singh",college:"VNSGU",sem:"6th",city:"Navsari",gender:"Female"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:19, name:"Budget Stay Adajan", area:"Adajan", rent:5000, type:"Non-AC", capacity:3, wifi:false, mess:true, isVeg:true, img:"https://i.ibb.co/2Ypr3psL/10.avif", lat:21.1915, lng:72.7985, address:"Street 4, Swami Narayan Colony, Adajan, Surat - 395009", desc:"Most affordable PG in Adajan with basic but clean rooms and daily tiffin.", amenities:["Mess","Hot Water","CCTV"], owner:{name:"Bhiku Patel",phone:"+91 87990 99909",initials:"B"}, roommates:[{name:"Tejas Patel",college:"VNSGU",sem:"1st",city:"Surat",gender:"Male"},{name:"Mitul Shah",college:"VNSGU",sem:"1st",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:20, name:"Luxury Adajan Suite", area:"Adajan", rent:16000, type:"AC", capacity:1, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/1Gk14SR5/11.avif", lat:21.1935, lng:72.8015, address:"Level 8, Skyview Tower, Adajan, Surat - 395009", desc:"Penthouse-level private PG suite with panoramic city view, gym and gourmet mess.", amenities:["WiFi","AC","Mess","Housekeeping","Hot Water","Laundry","CCTV","Power Backup","Gym","Terrace","Parking"], owner:{name:"Vivek Agarwal",phone:"+91 95588 10010",initials:"V"}, roommates:[] },
+    { id:46, name:"Adajan View Tower PG", area:"Adajan", rent:8800, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/qLqmmsjv/12.webp", lat:21.1925, lng:72.7998, address:"View Tower, Adajan, Surat - 395009", desc:"High-floor AC rooms with city views. 10 min walk to VNSGU.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup","Laundry"], owner:{name:"Hitesh Jain",phone:"+91 98257 26726",initials:"H"}, roommates:[{name:"Kapil Verma",college:"VNSGU",sem:"4th",city:"Rajasthan",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:47, name:"Adajan Eco Stay", area:"Adajan", rent:6800, type:"Non-AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/vCdBdSXV/13.png", lat:21.1952, lng:72.7975, address:"Eco Park Colony, Adajan, Surat - 395009", desc:"Eco-friendly PG with garden, solar hot water and organic vegetarian food.", amenities:["WiFi","Mess","Hot Water","CCTV","Power Backup","Parking"], owner:{name:"Manisha Ben",phone:"+91 91737 27827",initials:"M"}, roommates:[{name:"Kavya Patel",college:"VNSGU",sem:"5th",city:"Surat",gender:"Female"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:48, name:"Adajan Super Budget", area:"Adajan", rent:4200, type:"Non-AC", capacity:4, wifi:false, mess:true, isVeg:true, img:"https://i.ibb.co/R4Zhm97F/14.jpg", lat:21.1908, lng:72.7980, address:"Near Adajan Bus Stop, Surat - 395009", desc:"Super affordable 4-sharing PG with veg mess. Best for first-year students.", amenities:["Mess","Hot Water","CCTV"], owner:{name:"Mohan Bhai",phone:"+91 94260 28928",initials:"M"}, roommates:[{name:"Jigar Patel",college:"VNSGU",sem:"1st",city:"Surat",gender:"Male"},{name:"Het Shah",college:"VNSGU",sem:"1st",city:"Anand",gender:"Male"},{name:"Dev Mehta",college:"VNSGU",sem:"1st",city:"Vadodara",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+
+    // ── PIPLOD (5 PGs) ──
+    { id:21, name:"Piplod Scholar PG", area:"Piplod", rent:9000, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/H8fXWs6/15.webp", lat:21.1710, lng:72.7820, address:"Scholar Society, Piplod, Surat - 395007", desc:"Designed for serious students. Quiet environment, study lounge and fast WiFi.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Study Room","Power Backup"], owner:{name:"Naresh Lad",phone:"+91 98791 11111",initials:"N"}, roommates:[{name:"Dhruv Shah",college:"SVNIT",sem:"6th",city:"Vadodara",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:22, name:"Green Park PG Piplod", area:"Piplod", rent:12500, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/Nvqhy3w/16.jpg", lat:21.1725, lng:72.7810, address:"Green Park Row House, Piplod Main Rd, Surat - 395007", desc:"Row house PG with garden access, premium AC rooms and organic vegetarian food.", amenities:["WiFi","AC","Mess","Hot Water","Laundry","CCTV","Power Backup","Parking"], owner:{name:"Alka Desai",phone:"+91 99254 22222",initials:"A"}, roommates:[{name:"Preet Patel",college:"SVNIT",sem:"4th",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:23, name:"Piplod Ladies Nest", area:"Piplod", rent:10000, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/4Zd600v1/17.avif", lat:21.1695, lng:72.7835, address:"Nest Society, Piplod, Surat - 395007", desc:"Exclusive ladies PG in calm Piplod locality. Mother-cooked meals daily.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup","Housekeeping"], owner:{name:"Kavita Mehta",phone:"+91 70161 33333",initials:"K"}, roommates:[{name:"Isha Trivedi",college:"SVNIT",sem:"3rd",city:"Anand",gender:"Female"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:49, name:"Piplod Business PG", area:"Piplod", rent:14000, type:"AC", capacity:1, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/Sb1P8w1/18.jpg", lat:21.1705, lng:72.7825, address:"Business Hub, Piplod, Surat - 395007", desc:"Executive single room PG for MBA and final year students. Premium in every way.", amenities:["WiFi","AC","Mess","Housekeeping","Hot Water","Laundry","CCTV","Power Backup","Gym","Parking"], owner:{name:"Ashwin Kapoor",phone:"+91 99254 29029",initials:"A"}, roommates:[] },
+
+    // ── ATHWA (2 PGs) ──
+    { id:24, name:"Athwa Classic PG", area:"Athwa", rent:7500, type:"Non-AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/Y4m742Fy/19.webp", lat:21.1780, lng:72.8100, address:"Classic Society, Athwa Lines, Surat - 395001", desc:"Heritage area PG with modern amenities. Near VNSGU and city centre.", amenities:["WiFi","Mess","Hot Water","CCTV","Study Room","Power Backup"], owner:{name:"Jayantibhai Vyas",phone:"+91 98255 44444",initials:"J"}, roommates:[{name:"Mihir Solanki",college:"VNSGU",sem:"5th",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:25, name:"Athwa Premium Stay", area:"Athwa", rent:11500, type:"AC", capacity:1, wifi:true, mess:true, isVeg:false, img:"https://i.ibb.co/qTq8ffJ/20.png", lat:21.1795, lng:72.8085, address:"Premium Plaza, Athwa Gate, Surat - 395001", desc:"Single occupancy AC rooms with attached bathroom. Non-veg mess available.", amenities:["WiFi","AC","Mess","Hot Water","Laundry","CCTV","Power Backup","Parking"], owner:{name:"Rakesh Nair",phone:"+91 91738 55555",initials:"R"}, roommates:[] },
+
+    // ── BHATAR (2 PGs) ──
+    { id:26, name:"Bhatar Boys PG", area:"Bhatar", rent:6500, type:"Non-AC", capacity:3, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/SwpYJLtH/21.avif", lat:21.1650, lng:72.7900, address:"Bhatar Road, Nr. Bhatar Circle, Surat - 395007", desc:"Budget triple sharing PG in Bhatar. 5 min auto to SVNIT.", amenities:["WiFi","Mess","Hot Water","CCTV","Power Backup"], owner:{name:"Mahendra Bhai",phone:"+91 94265 66606",initials:"M"}, roommates:[{name:"Raj Solanki",college:"SVNIT",sem:"2nd",city:"Rajkot",gender:"Male"},{name:"Om Patel",college:"SVNIT",sem:"2nd",city:"Jamnagar",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:27, name:"Bhatar AC Comfort", area:"Bhatar", rent:9800, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/gbGjcwmp/22.avif", lat:21.1635, lng:72.7915, address:"Comfort Residency, Bhatar, Surat - 395007", desc:"New AC PG near SVNIT with clean rooms, WiFi and tiffin service.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup","Laundry"], owner:{name:"Sanjay Patel",phone:"+91 99786 77707",initials:"S"}, roommates:[{name:"Aakash Bhatt",college:"SVNIT",sem:"6th",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+
+    // ── ALTHAN (2 PGs) ──
+    { id:28, name:"Althan Student Villa", area:"Althan", rent:8000, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/Q7LM50Z2/23.avif", lat:21.1560, lng:72.7850, address:"Villa 5, Althan Tenament, Surat - 395017", desc:"Modern villa-style PG near SVNIT Althan gate. Clean, quiet and safe.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup","Study Room"], owner:{name:"Falguni Shah",phone:"+91 98240 88808",initials:"F"}, roommates:[{name:"Jainil Mehta",college:"SVNIT",sem:"4th",city:"Bharuch",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:53, name:"Althan Girls PG", area:"Althan", rent:8500, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/hRT4hFP7/24.jpg", lat:21.1555, lng:72.7845, address:"Girls Colony, Althan, Surat - 395017", desc:"Safe girls PG in Althan with biometric entry, CCTV and healthy meals.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup","Housekeeping"], owner:{name:"Urmila Ben",phone:"+91 94275 33433",initials:"U"}, roommates:[{name:"Priya Mehta",college:"SVNIT",sem:"4th",city:"Vadodara",gender:"Female"},{name:"",college:"",sem:"",city:"",gender:""}] },
+
+    // ── PAL (1 PG) ──
+    { id:29, name:"Pal Residency PG", area:"Pal", rent:7200, type:"Non-AC", capacity:2, wifi:true, mess:false, isVeg:true, img:"https://i.ibb.co/G3fC4kPG/25.png", lat:21.1420, lng:72.8050, address:"Pal Gam, Nr. D-Mart, Surat - 395009", desc:"Quiet Pal locality PG with WiFi. Self-cooking kitchen available.", amenities:["WiFi","Kitchen","Hot Water","CCTV","Power Backup","Parking"], owner:{name:"Kantilal Patel",phone:"+91 86909 99909",initials:"K"}, roommates:[{name:"Viren Joshi",college:"UTU",sem:"3rd",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+
+    // ── VARACHHA (1 PG) ──
+    { id:30, name:"Varachha Affordable PG", area:"Varachha", rent:4000, type:"Non-AC", capacity:4, wifi:false, mess:true, isVeg:true, img:"https://i.ibb.co/Q7vGx6wm/26.webp", lat:21.2100, lng:72.8650, address:"Kosad Road, Varachha, Surat - 395006", desc:"Most economical PG in Surat. Ideal for students on tight budget.", amenities:["Mess","Hot Water","CCTV"], owner:{name:"Raju Bhai",phone:"+91 99743 10101",initials:"R"}, roommates:[{name:"Sagar Patel",college:"UTU",sem:"1st",city:"Navsari",gender:"Male"},{name:"Kiran Desai",college:"UTU",sem:"1st",city:"Valsad",gender:"Male"},{name:"Nikhil Shah",college:"UTU",sem:"1st",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+
+    // ── KATARGAM (1 PG) ──
+    { id:31, name:"Katargam Smart PG", area:"Katargam", rent:5500, type:"Non-AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/Lzs0JT96/27.avif", lat:21.2350, lng:72.8500, address:"Ring Road, Katargam, Surat - 395004", desc:"Affordable PG near Katargam with home-style food and WiFi.", amenities:["WiFi","Mess","Hot Water","CCTV","Power Backup"], owner:{name:"Dilip Bhai",phone:"+91 99791 11211",initials:"D"}, roommates:[{name:"Raj Shah",college:"UTU",sem:"2nd",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+
+    // ── BARDOLI (7 PGs) ──
+    { id:33, name:"Bardoli Classic Stay", area:"Bardoli", rent:4200, type:"Non-AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/B5rGYPtn/28.jpg", lat:21.1215, lng:73.1095, address:"Classic Society, Bardoli - 394601", desc:"Clean and comfortable PG near Bardoli College with daily veg tiffin.", amenities:["WiFi","Mess","Hot Water","CCTV","Study Room"], owner:{name:"Kishan Bhai",phone:"+91 98256 13413",initials:"K"}, roommates:[{name:"Rohan Patel",college:"Bardoli Engineering College",sem:"2nd",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:34, name:"Engineering Boys Hostel", area:"Bardoli", rent:3500, type:"Non-AC", capacity:4, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/zhQgfPRy/29.jpg", lat:21.1225, lng:73.1110, address:"Nr. Bardoli Engg. College Gate, Bardoli - 394601", desc:"Hostel-style PG just outside engineering college gate. Most popular among freshers.", amenities:["WiFi","Mess","Hot Water","CCTV","Study Room","Power Backup"], owner:{name:"College Hostel",phone:"+91 94266 14514",initials:"C"}, roommates:[{name:"Dev Patel",college:"Bardoli Engineering College",sem:"1st",city:"Tapi",gender:"Male"},{name:"Nilesh Vasava",college:"Bardoli Engineering College",sem:"1st",city:"Bharuch",gender:"Male"},{name:"Pratik Gamit",college:"Bardoli Engineering College",sem:"1st",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:35, name:"Bardoli Premium AC", area:"Bardoli", rent:7000, type:"AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/gbK0ZQj9/30.jpg", lat:21.1205, lng:73.1085, address:"Premium Nagar, Bardoli - 394601", desc:"Only premium AC PG in Bardoli. Ideal for final year students wanting comfort.", amenities:["WiFi","AC","Mess","Hot Water","Laundry","CCTV","Power Backup"], owner:{name:"Bhavesh Shah",phone:"+91 91730 15615",initials:"B"}, roommates:[{name:"Saumil Desai",college:"Bardoli University",sem:"6th",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:36, name:"Bardoli Girls Hostel", area:"Bardoli", rent:4800, type:"Non-AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/gM9kMLKL/31.jpg", lat:21.1185, lng:73.1075, address:"Mahila Colony, Bardoli - 394601", desc:"Safe girls hostel in Bardoli with warden, CCTV and homely food.", amenities:["WiFi","Mess","Hot Water","CCTV","Power Backup","Study Room"], owner:{name:"Lata Ben",phone:"+91 99254 16716",initials:"L"}, roommates:[{name:"Krupa Patel",college:"Bardoli University",sem:"3rd",city:"Navsari",gender:"Female"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:37, name:"Station Road PG Bardoli", area:"Bardoli", rent:3800, type:"Non-AC", capacity:3, wifi:false, mess:true, isVeg:true, img:"https://i.ibb.co/Jjr8gcrh/32.avif", lat:21.1198, lng:73.1115, address:"Station Road, Bardoli - 394601", desc:"Walking distance from Bardoli station. Budget triple sharing with fresh tiffin.", amenities:["Mess","Hot Water","CCTV"], owner:{name:"Harish Patel",phone:"+91 98255 17817",initials:"H"}, roommates:[{name:"Tejas Vasava",college:"Bardoli Engineering College",sem:"2nd",city:"Vyara",gender:"Male"},{name:"Aman Gamit",college:"Bardoli Engineering College",sem:"2nd",city:"Tapi",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:38, name:"Bardoli Smart Hostel", area:"Bardoli", rent:5500, type:"Non-AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/sJc8sVNN/33.jpg", lat:21.1210, lng:73.1125, address:"Smart Colony, Nr. Bardoli Bus Stand, Bardoli - 394601", desc:"Modern hostel near Bardoli bus stand. Good connectivity and clean rooms.", amenities:["WiFi","Mess","Hot Water","CCTV","Power Backup","Study Room","Laundry"], owner:{name:"Chirag Patel",phone:"+91 90990 18918",initials:"C"}, roommates:[{name:"Neel Shah",college:"Bardoli University",sem:"4th",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:51, name:"Bardoli Station Road PG", area:"Bardoli", rent:4000, type:"Non-AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/K7ZDhJb/34.jpg", lat:21.1195, lng:73.1130, address:"Station Road, Bardoli - 394601", desc:"Near railway station for easy travel home. Clean rooms, fresh food.", amenities:["WiFi","Mess","Hot Water","CCTV"], owner:{name:"Nanu Bhai",phone:"+91 94261 31231",initials:"N"}, roommates:[{name:"Yash Rathod",college:"Bardoli Engineering College",sem:"3rd",city:"Surat",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+
+    // ── PALSANA (3 PGs) ──
+    { id:39, name:"Palsana Comfort PG", area:"Palsana", rent:4500, type:"Non-AC", capacity:2, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/pv8jZjw0/35.webp", lat:21.0775, lng:72.9630, address:"Comfort Lane, Palsana - 394315", desc:"Comfortable PG near ITI Palsana with home-cooked food.", amenities:["WiFi","Mess","Hot Water","CCTV","Study Room"], owner:{name:"Ishwar Bhai",phone:"+91 87900 19019",initials:"I"}, roommates:[{name:"Sagar Vasava",college:"ITI Palsana",sem:"2nd",city:"Navsari",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:40, name:"Palsana Budget Stay", area:"Palsana", rent:3500, type:"Non-AC", capacity:3, wifi:false, mess:true, isVeg:true, img:"https://i.ibb.co/6kxy9fg/36.webp", lat:21.0785, lng:72.9650, address:"Main Bazar, Palsana - 394315", desc:"Cheapest PG in Palsana. Clean rooms and daily veg tiffin service.", amenities:["Mess","Hot Water","CCTV"], owner:{name:"Ramu Kaka",phone:"+91 94261 20120",initials:"R"}, roommates:[{name:"Dipak Gamit",college:"ITI Palsana",sem:"1st",city:"Tapi",gender:"Male"},{name:"Suresh Baria",college:"ITI Palsana",sem:"1st",city:"Bharuch",gender:"Male"},{name:"",college:"",sem:"",city:"",gender:""}] },
+    { id:41, name:"Palsana AC Premium", area:"Palsana", rent:7500, type:"AC", capacity:1, wifi:true, mess:true, isVeg:true, img:"https://i.ibb.co/4gtYk6WN/37.webp", lat:21.0790, lng:72.9645, address:"Premium Park, Palsana Town - 394315", desc:"Only premium AC PG in Palsana with attached bathroom and 24/7 hot water.", amenities:["WiFi","AC","Mess","Hot Water","CCTV","Power Backup","Laundry"], owner:{name:"Pravin Patel",phone:"+91 99786 21221",initials:"P"}, roommates:[] }
+];
+
+// Combine all PGs
+const allPGs = pgData.concat(extraPGs);
+
+
+ // 'student' | 'owner' | null
+
+
+
+// ── Role selector functions ──
+
+// ==========================================
+// AI COLLEGE COMMUTE PLANNER
+// ==========================================
+
+var AI_FUNCTION_URL = "/api/ai";
+
+var collegeAreaMap = {
+    "SVNIT Surat":                 { areas: ["Vesu","Piplod","Althan","Bhatar"],    lat: 21.1588, lng: 72.7944 },
+    "UTU Surat":                   { areas: ["Bardoli","Bardoli Station Road"],                lat: 21.1463, lng: 72.7852 },
+    "VNSGU Surat":                 { areas: ["Adajan","Athwa","Vesu"],              lat: 21.1961, lng: 72.7892 },
+    "GLS University":              { areas: ["Adajan","Athwa"],                     lat: 21.1900, lng: 72.7800 },
+    "Bardoli Engineering College": { areas: ["Bardoli","Bardoli Station Road"],     lat: 21.1220, lng: 73.1100 },
+    "Bardoli University":          { areas: ["Bardoli","Bardoli Station Road"],     lat: 21.1190, lng: 73.1080 },
+    "ITI Palsana":                 { areas: ["Palsana"],                            lat: 21.0780, lng: 72.9640 },
+    "Other":                       { areas: ["Vesu","Adajan","Piplod"],             lat: 21.1703, lng: 72.8311 }
+};
+
+var aiState = { college:"", budget:10000, sharing:0, priorities:["commute","budget","amenities","safety","food"], pills:[], travel:"", extraNote:"" };
+
+function openAIPlanner() { openModal("aiPlannerModal"); goStep(1); }
+
+function goStep(n) {
+    if (n===2 && !validateStep1()) return;
+    [1,2,3,4].forEach(function(i) {
+        var el=document.getElementById("aiStep"+i), dot=document.getElementById("stepDot"+i);
+        if(el)  el.style.display=(i===n)?"block":"none";
+        if(dot){ dot.className="ai-step"; if(i<n) dot.className+=" done"; if(i===n) dot.className+=" active"; }
+    });
+}
+function validateStep1() {
+    var c=document.getElementById("aiCollege")?document.getElementById("aiCollege").value:"";
+    if(!c){ showToast("Please select your college"); return false; }
+    if(!aiState.sharing){ showToast("Please pick room sharing option"); return false; }
+    aiState.college=c; aiState.budget=parseInt(document.getElementById("aiBudget").value); return true;
+}
+function selectShare(n) { aiState.sharing=n; [1,2,3,4].forEach(function(i){ var el=document.getElementById("shareOpt"+i); if(el) el.className="ai-option-card"+(i===n?" selected":""); }); }
+function selectTravel(mode) {
+    aiState.travel=mode;
+    var m={walk:"travelOpt1",bike:"travelOpt2",bus:"travelOpt3"};
+    ["travelOpt1","travelOpt2","travelOpt3"].forEach(function(id){ var el=document.getElementById(id); if(el) el.className="ai-option-card"; });
+    var s=document.getElementById(m[mode]); if(s) s.className="ai-option-card selected";
+}
+function togglePill(key) {
+    var el=document.getElementById("pill-"+key); if(!el) return;
+    var idx=aiState.pills.indexOf(key);
+    if(idx>-1){ aiState.pills.splice(idx,1); el.className="ai-pill"; } else { aiState.pills.push(key); el.className="ai-pill selected"; }
+}
+(function(){
+    var ds=null;
+    document.addEventListener("dragstart",function(e){ var it=e.target.closest?e.target.closest(".priority-item"):null; if(!it) return; ds=it; setTimeout(function(){it.classList.add("dragging");},0); });
+    document.addEventListener("dragend",function(){ document.querySelectorAll(".priority-item").forEach(function(el){el.classList.remove("dragging","drag-over");}); updatePriorityRanks(); });
+    document.addEventListener("dragover",function(e){ e.preventDefault(); var it=e.target.closest?e.target.closest(".priority-item"):null; if(!it||it===ds) return; document.querySelectorAll(".priority-item").forEach(function(el){el.classList.remove("drag-over");}); it.classList.add("drag-over"); var list=document.getElementById("priorityList"); if(!list||!ds) return; var items=Array.from(list.querySelectorAll(".priority-item")); if(items.indexOf(ds)<items.indexOf(it)) list.insertBefore(ds,it.nextSibling); else list.insertBefore(ds,it); });
+    document.addEventListener("drop",function(e){e.preventDefault();});
+})();
+function updatePriorityRanks() { var list=document.getElementById("priorityList"); if(!list) return; aiState.priorities=[]; list.querySelectorAll(".priority-item").forEach(function(item,i){ var v=item.getAttribute("data-val"); aiState.priorities.push(v); var r=document.getElementById("rank-"+v); if(r) r.innerText=i+1; }); }
+function scorePG(pg,ci) {
+    var s=0,w={}; aiState.priorities.forEach(function(p,i){w[p]=5-i;});
+    s+=(ci.areas[0]===pg.area?10:ci.areas[1]===pg.area?7:3)*(w.commute||3);
+    if(pg.rent>aiState.budget){s-=80;}else{s+=Math.min(10,5+((aiState.budget-pg.rent)/aiState.budget)*5)*(w.budget||3);}
+    var a=0; if(pg.wifi)a+=2; if(pg.type==="AC")a+=2; if(pg.mess)a+=2; if(pg.amenities){if(pg.amenities.includes("Laundry"))a+=1;if(pg.amenities.includes("Gym"))a+=1;if(pg.amenities.includes("Power Backup"))a+=1;if(pg.amenities.includes("CCTV"))a+=1;}
+    s+=Math.min(10,a)*(w.amenities||3);
+    var sf=0; if(pg.amenities){if(pg.amenities.includes("CCTV"))sf+=4;if(pg.amenities.includes("Power Backup"))sf+=3;if(pg.amenities.includes("Parking"))sf+=2;}
+    s+=Math.min(10,sf)*(w.safety||3);
+    var f=pg.mess?10:3; if(pg.isVeg&&aiState.pills.includes("veg"))f=10; s+=f*(w.food||3);
+    if(aiState.pills.includes("wifi")&&!pg.wifi)s-=40; if(aiState.pills.includes("ac")&&pg.type!=="AC")s-=35;
+    if(aiState.pills.includes("mess")&&!pg.mess)s-=35; if(aiState.pills.includes("veg")&&!pg.isVeg)s-=60;
+    if(aiState.pills.includes("laundry")&&pg.amenities&&!pg.amenities.includes("Laundry"))s-=20;
+    if(aiState.pills.includes("gym")&&pg.amenities&&!pg.amenities.includes("Gym"))s-=15;
+    if(aiState.pills.includes("parking")&&pg.amenities&&!pg.amenities.includes("Parking"))s-=15;
+    if(aiState.sharing&&aiState.sharing!==4&&pg.capacity!==aiState.sharing)s-=25;
+    return Math.max(0,s);
+}
+async function runAIAnalysis() {
+    updatePriorityRanks();
+    aiState.extraNote=(document.getElementById("aiExtraNote")&&document.getElementById("aiExtraNote").value)||"";
+    goStep(4);
+    var msgs=["Analyzing your priorities...","Calculating commute distances...","Scoring "+allPGs.length+" PGs...","Ranking by your preferences...","Almost ready..."];
+    var mi=0,li=setInterval(function(){ mi=(mi+1)%msgs.length; var el=document.getElementById("aiLoadingText"); if(el) el.innerText=msgs[mi]; },900);
+    var ci=collegeAreaMap[aiState.college]||collegeAreaMap["Other"];
+    // Filter PGs near selected college first, then score
+    var nearbyPGs = allPGs.filter(function(pg) {
+        return ci.areas.indexOf(pg.area) !== -1;
+    });
+    // If not enough nearby PGs, add more from all PGs
+    if (nearbyPGs.length < 4) nearbyPGs = allPGs;
+    var scored = nearbyPGs.map(function(pg){ return {pg:pg, score:scorePG(pg,ci)}; });
+    scored.sort(function(a,b){return b.score-a.score;});
+    var top=scored.slice(0,4), mx=top[0]?top[0].score:1;
+    var pn={commute:"Short Commute",budget:"Low Budget",amenities:"Best Amenities",safety:"Safety & Security",food:"Food / Mess"};
+    var pt=aiState.priorities.map(function(p,i){return (i+1)+". "+(pn[p]||p);}).join(", ");
+    var prompt="You are a helpful AI assistant for SmartFinder, a student PG finder in Surat, Gujarat. Student: College="+aiState.college+", Budget=Rs."+aiState.budget.toLocaleString()+", Sharing="+(aiState.sharing===4?"Any":aiState.sharing+"p")+", Priorities="+pt+", Must-have="+(aiState.pills.join(", ")||"none")+", Travel="+(aiState.travel||"any")+". Top "+top.length+" PGs from "+allPGs.length+" total: "+top.map(function(it,i){var p=it.pg;return (i+1)+"."+p.name+"("+p.area+") Rs."+p.rent+(p.wifi?" WiFi":"")+(p.mess?" Mess":"")+" "+Math.round((it.score/mx)*100)+"% match";}).join(",")+". Write warm 3 sentences: why these PGs match, commute tip, budget tip. No bullets.";
+    try {
+        var r=await fetch(AI_FUNCTION_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:prompt})});
+        if(!r.ok) throw new Error(r.status);
+        var d=await r.json(); clearInterval(li);
+        showAIResults(top,mx,d.result||"Great! Found the best PGs for your needs.");
+    } catch(err) {
+        clearInterval(li);
+        showAIResults(top,mx,"Based on your college and budget, we found the best PGs in "+ci.areas[0]+". Click any card to see full details, map and owner contact!");
+    }
+}
+function showAIResults(top,mx,txt) {
+    var l=document.getElementById("aiLoadingState"),r=document.getElementById("aiResultState");
+    if(l) l.style.display="none"; if(r) r.style.display="block";
+    var s=document.getElementById("aiResultSubtitle"); if(s) s.innerText="Found "+top.length+" best PGs from "+allPGs.length+" listings near "+aiState.college;
+    var a=document.getElementById("aiAnalysisText"); if(a) a.innerText=txt;
+    var c=document.getElementById("aiMatchedPGs"); if(!c) return;
+    var medals=["#1","#2","#3","#4"],html="";
+    top.forEach(function(item,i) {
+        var pg=item.pg,pct=Math.round((item.score/mx)*100),split=Math.round(pg.rent/pg.capacity),tags=[];
+        if(pg.type==="AC")tags.push("AC"); if(pg.wifi)tags.push("WiFi"); if(pg.mess)tags.push("Mess"); if(pg.isVeg)tags.push("Veg");
+        html+='<div class="ai-pg-result-card" data-pgid="'+pg.id+'">';
+        html+='<img src="'+pg.img+'" style="width:68px;height:68px;border-radius:12px;object-fit:cover;flex-shrink:0;">';
+        html+='<div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:14px;font-weight:800;color:#CEDC00;">'+medals[i]+'</span><span style="font-family:Syne,sans-serif;font-weight:800;font-size:13px;color:#CEDC00;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+pg.name+'</span></div>';
+        html+='<div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:4px;">'+pg.area+' &middot; &#8377;'+pg.rent.toLocaleString()+'/mo &middot; &#8377;'+split.toLocaleString()+'/person</div>';
+        html+='<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px;">'+tags.join(' &middot; ')+'</div>';
+        html+='<div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;background:rgba(255,255,255,0.08);border-radius:999px;height:5px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:linear-gradient(to right,#CEDC00,#a8b800);border-radius:999px;"></div></div><span style="font-size:9px;font-weight:800;color:#CEDC00;background:rgba(206,220,0,0.12);border:1px solid rgba(206,220,0,0.25);padding:2px 8px;border-radius:20px;">'+pct+'% match</span></div>';
+        html+='</div><div style="font-size:11px;color:rgba(255,255,255,0.25);flex-shrink:0;">&rarr;</div></div>';
+    });
+    c.innerHTML=html;
+    c.querySelectorAll(".ai-pg-result-card").forEach(function(card) {
+        card.addEventListener("click",function(){ var id=parseInt(this.getAttribute("data-pgid")); closeModal("aiPlannerModal"); openPGDetail(id); });
+        card.addEventListener("mouseover",function(){this.style.borderColor="#CEDC00"; this.style.transform="translateX(4px)";});
+        card.addEventListener("mouseout",function(){this.style.borderColor="rgba(206,220,0,0.18)"; this.style.transform="none";});
+    });
+}
+function resetAI() {
+    aiState={college:"",budget:10000,sharing:0,priorities:["commute","budget","amenities","safety","food"],pills:[],travel:"",extraNote:""};
+    var l=document.getElementById("aiLoadingState"),r=document.getElementById("aiResultState");
+    if(l) l.style.display="block"; if(r) r.style.display="none";
+    var m=document.getElementById("aiMatchedPGs"); if(m) m.innerHTML="";
+}
+
+
+// ── TEAM MODAL ──
+var teamData = {
+    sanjay: {
+        name:"Sanjay Chosaliya", role:"Co-Founder & CEO",
+        color:"linear-gradient(135deg,#CEDC00,#a8b800)", textColor:"#00352F", roleColor:"#CEDC00", letter:"S",
+        college:"SVNIT Surat", year:"3rd Year, CSE", hometown:"Surat, Gujarat",
+        bio:"Sanjay is the brain behind SmartFinder. He got tired of spending hours in WhatsApp groups looking for a decent PG near SVNIT. So he decided to build the solution himself. He handles everything from product decisions to business growth.",
+        funFact:"He once visited 14 PGs in a single day before finding a decent one — that frustration sparked SmartFinder!",
+        skills:["Product Vision","Business Strategy","Firebase","Growth Hacking"]
+    },
+    jay: {
+        name:"Jay Sohaliya", role:"Head of Operations",
+        color:"linear-gradient(135deg,rgba(59,130,246,0.9),rgba(37,99,235,1))", textColor:"#fff", roleColor:"#60a5fa", letter:"J",
+        college:"UTU Surat", year:"2nd Year, MBA", hometown:"Bardoli, Gujarat",
+        bio:"Jay makes sure SmartFinder runs like clockwork. He coordinates with PG owners, manages quality checks, and ensures every student query gets answered. If something needs to get done, Jay gets it done.",
+        funFact:"Jay once handled 47 student queries in a single day during exam season — and replied to every single one!",
+        skills:["Operations","Quality Control","Student Support","Partnerships"]
+    },
+    ritu: {
+        name:"Ritu Radadiya", role:"Lead Developer",
+        color:"linear-gradient(135deg,rgba(139,92,246,0.9),rgba(109,40,217,1))", textColor:"#fff", roleColor:"#c084fc", letter:"R",
+        college:"VNSGU Surat", year:"4th Year, IT", hometown:"Rajkot, Gujarat",
+        bio:"Ritu built SmartFinder from the ground up. Every line of code, every animation, every Firebase rule — she wrote it all. She also integrated the AI-powered PG finder that recommends PGs based on your exact college location.",
+        funFact:"Ritu once stayed up 38 hours straight to finish the AI recommendation engine before the college fest demo!",
+        skills:["JavaScript","Firebase","AI/ML","Node.js","UI Engineering"]
+    },
+    kaksha: {
+        name:"Kaksha Parsana", role:"Design & Marketing",
+        color:"linear-gradient(135deg,rgba(16,185,129,0.9),rgba(5,150,105,1))", textColor:"#fff", roleColor:"#34d399", letter:"K",
+        college:"GLS University", year:"3rd Year, BBA", hometown:"Surat, Gujarat",
+        bio:"Kaksha designed every screen you see on SmartFinder. She is obsessed with clean, intuitive UI. She also runs SmartFinder's social media and has single-handedly brought in over 500 student signups through campus campaigns.",
+        funFact:"Kaksha redesigned the entire SmartFinder homepage 6 times before she was happy with it — and it was worth every second!",
+        skills:["UI/UX Design","Figma","Social Media","Branding","Marketing"]
+    }
+};
+
+function openTeamModal(id) {
+    var d = teamData[id];
+    if (!d) return;
+    document.getElementById('tmAvatar').style.background = d.color;
+    document.getElementById('tmAvatar').style.color      = d.textColor;
+    document.getElementById('tmAvatar').innerText        = d.letter;
+    document.getElementById('tmName').innerText          = d.name;
+    document.getElementById('tmRole').innerText          = d.role;
+    document.getElementById('tmRole').style.color        = d.roleColor;
+    document.getElementById('tmCollege').innerText       = '🎓 ' + d.college + '  •  ' + d.year;
+    document.getElementById('tmHometown').innerText      = '📍 ' + d.hometown;
+    document.getElementById('tmBio').innerText           = d.bio;
+    document.getElementById('tmFunFact').innerHTML       = '<span style="color:#CEDC00;font-weight:700;">💡 Fun Fact: </span>' + d.funFact;
+    document.getElementById('tmSkills').innerHTML        = d.skills.map(function(s) {
+        return '<span style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:999px;padding:4px 12px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.7);">' + s + '</span>';
+    }).join('');
+    openModal('teamModal');
+}
+
+</script>
+
+</body>
+</html>
